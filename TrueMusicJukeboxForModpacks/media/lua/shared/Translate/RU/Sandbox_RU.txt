@@ -1,0 +1,17 @@
+Sandbox_RU = {
+	
+	Sandbox_TrueMusicJukebox = "True Music Jukebox",
+	
+	Sandbox_jukeboxesAttractZombies = "Позволить музыкальному автомату привлекать зомби",
+	Sandbox_jukeboxesAttractZombies_tooltip = "Отключение этого параметра уберет возможность привлечения зомби музыкальным автоматом.",
+
+	Sandbox_maxRange = "Максимальный диапазон слышимости музыки",
+	Sandbox_maxRange_tooltip = "Хотите услышать свой музыкальный автомат по всему городу? Попробуйте расширить значения в рамках разумного. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_literatureFrequencyMultiplier = "Множитель появления обучающей литературы",
+	Sandbox_literatureFrequencyMultiplier_tooltip = "Отрегулирует базовую частоту появления обучающих книг по созданию музыкального автомата. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_starterKitFrequencyMultiplier = "Множитель появления стартового комплекта",
+	Sandbox_starterKitFrequencyMultiplier_tooltip = "Отрегулирует базовую частоту появления стартового комплекта. <RGB:1.0,0.6,0.0> "
+
+}

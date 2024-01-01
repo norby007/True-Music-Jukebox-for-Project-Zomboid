@@ -1,0 +1,17 @@
+Sandbox_ES = {
+	
+	Sandbox_TrueMusicJukebox = "True Music Jukebox",
+	
+	Sandbox_jukeboxesAttractZombies = "Habilitar Música del Jukebox para Atraer Zombies",
+	Sandbox_jukeboxesAttractZombies_tooltip = "Desactivar esto eliminará la posibilidad de que los zombies sean atraídos por la música del Jukebox.",
+
+	Sandbox_maxRange = "Rango Máximo Audible de la Música del Jukebox",
+	Sandbox_maxRange_tooltip = "¿Quieres escuchar tu jukebox en toda tu ciudad? Siéntete libre de intentar superar los límites razonables. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_literatureFrequencyMultiplier = "Multiplicador de Frecuencia de Literatura",
+	Sandbox_literatureFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran libros que enseñan la construcción del jukebox. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_starterKitFrequencyMultiplier = "Multiplicador de Frecuencia de Kits de Inicio del Jukebox",
+	Sandbox_starterKitFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran los kits de inicio del jukebox. <RGB:1.0,0.6,0.0> "
+
+}

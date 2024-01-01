@@ -1,0 +1,37 @@
+UI_ES = {
+	UI_TrueMusicJukebox_playNow = "Reproducir Ahora",
+	UI_TrueMusicJukebox_playNext = "Reproducir Siguiente",
+	UI_TrueMusicJukebox_playLast = "Reproducir Última",
+	UI_TrueMusicJukebox_viewQueue = "Cola del Jukebox",
+	UI_TrueMusicJukebox_nowPlaying = "Reproduciendo Ahora",
+	UI_TrueMusicJukebox_turnOnJukebox = "Encender Jukebox",
+	UI_TrueMusicJukebox_turnOffJukebox = "Apagar Jukebox",
+	UI_TrueMusicJukebox_setJukeboxVolume = "Volumen del Jukebox",
+	UI_TrueMusicJukebox_jukeboxMainMenu = "Menú Principal del Jukebox",
+	UI_TrueMusicJukebox_playLoadedTracks = "Reproducir Pistas Cargadas",
+	UI_TrueMusicJukebox_shuffleLoadedTracks = "Mezclar Pistas Cargadas",
+	UI_TrueMusicJukebox_playRandomTrack = "Reproducir Pista Aleatoria",
+	UI_TrueMusicJukebox_replayCurrentTrack = "Repetir Pista Actual",
+	UI_TrueMusicJukebox_replayLastTrack = "Repetir Última Pista",
+	UI_TrueMusicJukebox_skipCurrentTrack = "Saltar Pista Actual",
+	UI_TrueMusicJukebox_showCurrentTrack = "Ver Pista Actual",
+	UI_TrueMusicJukebox_playSpecificTrack = "Lista de Reproducción del Jukebox",
+	UI_TrueMusicJukebox_queueSpecificTrack = "Cola de Pista Específica",
+	UI_TrueMusicJukebox_statusReport = "Informe de Estado",
+
+	UI_TrueMusicJukebox_cannotReadLoadedItem = "No se puede leer la música de ",
+
+	UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu = "Ocultar Lista de Pistas del Menú Contextual",
+	UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu = "Mostrar Todas las Pistas en el Menú Contextual",
+	UI_TrueMusicJukebox_MO_threeDimensionalAudio = "Usar Efectos de Audio Tridimensionales",
+	UI_TrueMusicJukebox_MO_alwaysTellMyFriends = "Siempre Informar a Mis Amigos",
+	UI_TrueMusicJukebox_MO_feedbackAccessibilityMode = "Mostrar Retroalimentación de Accesibilidad del Jukebox",
+	UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime = "Tiempo de Visualización del Modo de Accesibilidad",
+
+	UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu_tooltip = "Oculta las categorías del menú contextual para reproducir y poner en cola canciones, lo cual aún se puede hacer desde el panel de botín de la interfaz de inventario. Este menú puede volverse bastante lento cuando se deben agregar demasiadas opciones, por lo que esto puede ayudar al rendimiento para algunas personas.",
+	UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu_tooltip = "Muestra cada canción en la lista de pistas del menú contextual. Por defecto, el menú contextual solo muestra las 50 canciones más cercanas, porque cientos de canciones harán que el menú se retrase durante varios segundos, incluso en una buena computadora. Puedes eliminar este límite si quieres desafiar tanto a Project Zomboid como a tu computadora.",
+	UI_TrueMusicJukebox_MO_threeDimensionalAudio_tooltip = "Por defecto, este mod no aplica las propiedades multidireccionales del audio 3D que algunos mods utilizan. Para algunos usuarios, el audio 3D favorece demasiado el oído izquierdo o derecho y, por lo tanto, no es deseable; para otros, se siente más realista. Selecciona esta opción para habilitarla si quieres probarla; para revertir una vez que te das cuenta de que el audio 3D no es genial en Zomboid, debes saltar la canción actual después de desactivarla nuevamente.",
+	UI_TrueMusicJukebox_MO_alwaysTellMyFriends_tooltip = "Si esta opción está seleccionada, tu personaje usará SayShout en lugar de Say para comunicar los cambios que desencadenan en un jukebox; esto hará que le cuenten a otros jugadores en un servidor lo que han hecho (para que otros vean sobre tu cabeza que has saltado una pista, elegido una canción o puesto en cola algo). Cuando esta opción está seleccionada, el jugador que interactúa siempre hablará después de activar con éxito un evento en un jukebox, incluso si habilitas Retroalimentación de Jukebox Accesible a continuación.",
+	UI_TrueMusicJukebox_MO_feedbackAccessibilityMode_tooltip = "Si el texto sobre la cabeza de un jugador es demasiado pequeño para que lo leas, puedes habilitar esta opción para mostrar la retroalimentación en una ventana emergente alternativa que se desvanece automáticamente. Esto oculta el texto normal de Say a menos que habilites Siempre Informar a Mis Amigos.",
+	UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime_tooltip = "Si la opción anterior está habilitada, esto determina cuántos segundos un mensaje estará visible antes de comenzar el proceso de desvanecimiento. La velocidad de desvanecimiento se determina naturalmente por la velocidad de cuadros de tu pantalla."
+}

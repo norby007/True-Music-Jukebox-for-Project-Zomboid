@@ -1,0 +1,42 @@
+VERSION = 1,
+
+option TrueMusicJukebox.forceThreeDimensionalAudio = {
+	type = boolean,
+	default = false,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.forceThreeDimensionalAudio
+}
+
+option TrueMusicJukebox.jukeboxesAttractZombies = {
+	type = boolean,
+	default = true,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.jukeboxesAttractZombies
+}
+
+option TrueMusicJukebox.maxRange = {
+	type = integer,
+	min = 5,
+	max = 5000,
+	default = 50,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.maxRange
+}
+
+option TrueMusicJukebox.literatureFrequencyMultiplier = {
+	type = double,
+	min = 0,
+	max = 10,
+	default = 1,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.literatureFrequencyMultiplier
+}
+
+option TrueMusicJukebox.starterKitFrequencyMultiplier = {
+	type = double,
+	min = 0,
+	max = 10,
+	default = 1,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.starterKitFrequencyMultiplier
+}

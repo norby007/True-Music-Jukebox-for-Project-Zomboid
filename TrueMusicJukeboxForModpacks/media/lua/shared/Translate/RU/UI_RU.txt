@@ -1,0 +1,37 @@
+UI_RU = {
+    UI_TrueMusicJukebox_playNow = "Воспроизвести сейчас",
+	UI_TrueMusicJukebox_playNext = "Воспроизвести следующим",
+	UI_TrueMusicJukebox_playLast = "Воспроизвести последним",
+	UI_TrueMusicJukebox_viewQueue = "Очередь треков",
+	UI_TrueMusicJukebox_nowPlaying = "Сейчас играет",
+	UI_TrueMusicJukebox_turnOnJukebox = "Включить музыкальный автомат",
+	UI_TrueMusicJukebox_turnOffJukebox = "Выключить музыкальный автомат",
+	UI_TrueMusicJukebox_setJukeboxVolume = "Громкость музыкального автомата",
+	UI_TrueMusicJukebox_jukeboxMainMenu = "Главное меню музыкального автомата",
+	UI_TrueMusicJukebox_playLoadedTracks = "Воспроизвести загруженные треки",
+	UI_TrueMusicJukebox_shuffleLoadedTracks = "Перемешать загруженные треки",
+	UI_TrueMusicJukebox_playRandomTrack = "Воспроизвести случайный трек",
+	UI_TrueMusicJukebox_replayCurrentTrack = "Повтор текущего трека",
+	UI_TrueMusicJukebox_replayLastTrack = "Повтор последнего трека",
+	UI_TrueMusicJukebox_skipCurrentTrack = "Пропустить текущий трек",
+	UI_TrueMusicJukebox_showCurrentTrack = "Показать текущий трек",
+	UI_TrueMusicJukebox_playSpecificTrack = "Плейлист музыкального автомата",
+	UI_TrueMusicJukebox_queueSpecificTrack = "Поместить трек в очередь",
+    UI_TrueMusicJukebox_statusReport = "Отчет о состоянии",
+
+	UI_TrueMusicJukebox_cannotReadLoadedItem = "Невозможно воспроизвести музыку с ",
+	
+	UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu = "Спрятать трек-лист из контекстного меню",
+	UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu = "Показать каждый трек в контекстном меню",
+	UI_TrueMusicJukebox_MO_threeDimensionalAudio = "Использовать 3D аудио эффект",
+	UI_TrueMusicJukebox_MO_alwaysTellMyFriends = "Всегда сообщать моим друзьям",
+	UI_TrueMusicJukebox_MO_feedbackAccessibilityMode = "Отображать доступную обратную связь",
+	UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime = "Время отображения режима специальных возможностей",
+
+	UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu_tooltip = "Hides the context menu categories for playing and queueing songs, which can still be done from the loot panel of your inventory UI. This menu can get pretty laggy when too many options need to be added, so this may help performance for some people.",
+	UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu_tooltip = "Shows every song in the tracklist of the context menu. By default, the context menu only shows the nearest 50 songs, because hundreds of songs will cause the menu to lag for several seconds, even on a great computer. You may remove this limit if you want to challenge both Project Zomboid and your computer.",
+	UI_TrueMusicJukebox_MO_threeDimensionalAudio_tooltip = "By default, this mod does not apply the multidirectional properties of 3D audio that some mods use. For some users, 3D audio too heavily favors the left or right ear, and is therefore undesirable; for others, it feels more realistic. Select this option to enable it if you want to try it; to revert once you realize 3D audio is not great in Zomboid, you must skip the current song after disabling again.",
+	UI_TrueMusicJukebox_MO_alwaysTellMyFriends_tooltip = "If this option is selected, your player will use SayShout instead of Say to communicate changes they trigger on a jukebox; this will cause them to tell other players on a server what they have done (so that others will see above your head that you have skipped a track, picked a song, or queued something).  When this option is selected, the interacting player will always speak after successfully triggering an event on a jukebox, even if you enable Accessible Jukebox Feedback below.",
+	UI_TrueMusicJukebox_MO_feedbackAccessibilityMode_tooltip = "If the text above a player's head is too small for you to read, you may enable this option to display feedback in an alternative pop-up that automatically fades out. This hides the normal Say text unless you enable Always Tell My Friends.",
+	UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime_tooltip = "If the option above is enabled, this determines how many seconds a message will be visible before it begins the process of fadeout. Fadeout speed is naturally determined by your framerate."
+}
