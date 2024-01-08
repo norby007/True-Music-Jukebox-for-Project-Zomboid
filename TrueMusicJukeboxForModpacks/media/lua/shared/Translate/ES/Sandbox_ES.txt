@@ -2,16 +2,24 @@ Sandbox_ES = {
 	
 	Sandbox_TrueMusicJukebox = "True Music Jukebox",
 	
-	Sandbox_jukeboxesAttractZombies = "Habilitar Música del Jukebox para Atraer Zombies",
-	Sandbox_jukeboxesAttractZombies_tooltip = "Desactivar esto eliminará la posibilidad de que los zombies sean atraídos por la música del Jukebox.",
+	Sandbox_forceThreeDimensionalAudio = "Forzar audio tridimensional",
+	Sandbox_forceThreeDimensionalAudio_tooltip = "Obliga a todos los jugadores en el servidor a usar el modo de sonido 3D de Project Zomboid, lo que hace que el sonido sea<br>afectado por habitaciones y paredes. Creemos que esto hace que la música suene peor en muchos casos, así que<br>recomendamos dejar esto apagado y permitir que los jugadores elijan su propio modo de sonido de manera individual<br>usando sus Opciones de Mod en el juego. Por defecto, este mod utiliza su propio modo de sonido 3D personalizado.",
 
-	Sandbox_maxRange = "Rango Máximo Audible de la Música del Jukebox",
-	Sandbox_maxRange_tooltip = "¿Quieres escuchar tu jukebox en toda tu ciudad? Siéntete libre de intentar superar los límites razonables. <RGB:1.0,0.6,0.0> ",
+	Sandbox_jukeboxesAttractZombies = "Habilitar atracción de zombis por la música",
+	Sandbox_jukeboxesAttractZombies_tooltip = "Desactivar esto eliminará la posibilidad de que los zombis se sientan atraídos por la música de la rockola que está sonando.",
 
-	Sandbox_literatureFrequencyMultiplier = "Multiplicador de Frecuencia de Literatura",
-	Sandbox_literatureFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran libros que enseñan la construcción del jukebox. <RGB:1.0,0.6,0.0> ",
+	Sandbox_partyPooper = "Aguafiestas",
+	Sandbox_partyPooper_tooltip = "Evita que aparezcan héroes de máquinas de discos con un kit de inicio para construir máquinas de discos.",
 
-	Sandbox_starterKitFrequencyMultiplier = "Multiplicador de Frecuencia de Kits de Inicio del Jukebox",
-	Sandbox_starterKitFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran los kits de inicio del jukebox. <RGB:1.0,0.6,0.0> "
+	Sandbox_heroStarterTracks = "Pistas iniciales para el héroe de la rockola",
+	Sandbox_heroStarterTracks = "¿Cuántos casetes y vinilos aleatorios debería obtener un héroe de la máquina de discos al crear un personaje?",
 
+	Sandbox_maxRange = "Alcance máximo audible de la música de la rockola",
+	Sandbox_maxRange_tooltip = "¿Quieres escuchar tu rockola en toda tu ciudad? Siéntete libre de intentar superar los límites razonables. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_literatureFrequencyMultiplier = "Multiplicador de frecuencia de literatura",
+	Sandbox_literatureFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran los libros que enseñan la construcción de la rockola. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_starterKitFrequencyMultiplier = "Multiplicador de frecuencia del kit de inicio",
+	Sandbox_starterKitFrequencyMultiplier_tooltip = "Esto ajustará la frecuencia base con la que se encuentran los kits de inicio de la rockola. <RGB:1.0,0.6,0.0> "
 }

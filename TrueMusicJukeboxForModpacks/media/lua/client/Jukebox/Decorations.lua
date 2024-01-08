@@ -26,16 +26,15 @@ function ISInventoryPane:lootAll()
     local playerIndex = self.player
     if getPlayerLoot(playerIndex).inventory:getType() == "jukebox" then
         local jukebox = getPlayerLoot(playerIndex).inventory:getParent()
-        local jukeboxData = jukebox:getModData()
-        local key = Jukebox.locationToKey(jukeboxData)
-        if Jukebox.activeTracks[key] then
-            Jukebox.activeTracks[key].sound:stop()
-            Jukebox.activeTracks[key] = nil
-            Jukebox.activeLocations[key] = nil
-            sendClientCommand("Jukebox", "clear", {[key] = true})
-            jukeboxData.on = false
-            jukebox:transmitModData()
-        end
+        if (jukebox and jukebox.getSquare) then
+            local key = Jukebox.squareToKey(jukebox:getSquare())
+            local jukeboxData = Jukebox.activeLocations[key]
+            if jukeboxData then
+                jukeboxData.on = false
+                ModData.transmit("Jukebox.activeLocations")
+                sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+            end
+        end 
     end
     Jukebox.ISInventoryPane.lootAll(self)
 end
@@ -66,5 +65,17 @@ ISInventoryPaneContextMenu.onGrabItems = function(stack, playerIndex)
 
     if not jukebox then return end
 
-    Jukebox.removeTrack(jukebox, item:getType())
+	local key = Jukebox.squareToKey(jukebox:getSquare())
+
+    local location = Jukebox.keyToLocation(key)
+
+	local jukeboxData = Jukebox.activeLocations[key]
+
+    if not jukeboxData then return end
+
+    Jukebox.removeTrack(jukeboxData, item:getType())
+
+    ModData.transmit("Jukebox.activeLocations")
+
+    sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
 end

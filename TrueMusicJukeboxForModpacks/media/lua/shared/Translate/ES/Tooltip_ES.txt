@@ -1,4 +1,4 @@
 Tooltip_ES = {
-    Tooltip_TrueMusicJukebox_InstructionManual = "<br>Este manual analiza la construcción del jukebox en detalle meticuloso.<br><br>Una vez construido, enciende el jukebox una vez<br>para desbloquear el mecanismo de carga. Luego puedes comenzar<br>a insertar libremente tus casetes y vinilos favoritos.",
-    Tooltip_TrueMusicJukebox_StarterKit = "Esta caja de dispositivos, herramientas y manuales parece estar<br>destinada a ayudar en la construcción de jukeboxes."
+    Tooltip_TrueMusicJukebox_InstructionManual = "<br>Este manual discute la construcción de la rockola en detalle minucioso.<br><br>Una vez que se haya construido, por favor, enciende la rockola una vez<br>para desbloquear el mecanismo de carga. Luego puedes comenzar<br>a insertar libremente tus cassettes y vinilos favoritos.",
+    Tooltip_TrueMusicJukebox_StarterKit = "Esta caja de gadgets, herramientas y manuales parece estar<br>destinada a ayudar en la construcción de rockolas."
 }

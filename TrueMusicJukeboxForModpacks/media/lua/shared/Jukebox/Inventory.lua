@@ -9,8 +9,8 @@ Jukebox.playTrackFromInventory = function(playerIndex, menu, stack)
     local item = nil
     local items = nil
     if stack and stack[1] and stack[1].items then
-            items = stack[1].items
-            item = items[1]
+        items = stack[1].items
+        item = items[1]
     elseif stack and stack[1] then
         item = stack[1]
     end
@@ -25,20 +25,25 @@ Jukebox.playTrackFromInventory = function(playerIndex, menu, stack)
         local jukebox = tracklist:getParent()
 
         local square = jukebox:getSquare()
+    
+        local key = Jukebox.squareToKey(square)
 
-        if jukebox:getModData().version ~= Jukebox.version then
+        local jukeboxData = Jukebox.activeLocations[key]
+
+        if (not jukeboxData) or (jukeboxData == true) or (jukeboxData.version ~= Jukebox.version) then
             jukebox = Jukebox.getEvolvedJukebox(square) -- Upgrades jukebox if necessary.
+            jukeboxData = Jukebox.activeLocations[key]
         end
         
-        Jukebox.initializePlaylist(jukebox)
+        Jukebox.initializePlaylist(jukebox, jukeboxData)
 
-        -- local objects = square:getWorldObjects()
+        local playlistSize = #jukeboxData.playlist
 
-        local jukeboxData = jukebox:getModData()
+		jukeboxData.currentIndex = (jukeboxData.currentIndex and math.min(math.max(jukeboxData.currentIndex, 1), playlistSize)) or 1
 
         local trackType = item:getType()
 
-        local key = Jukebox.locationToKey(jukeboxData)
+        local key = Jukebox.dataToKey(jukeboxData)
 
         local activeTrack = Jukebox.activeTracks[key]
 
@@ -47,8 +52,7 @@ Jukebox.playTrackFromInventory = function(playerIndex, menu, stack)
 
             menu:addOptionOnTop(Jukebox.translation.turnOnJukebox, wookieesWereHere,
                 function()
-                    jukeboxData.currentIndex = Jukebox.getTrackIndex(jukeboxData, trackType)
-                    JukeboxMenus.onUseJukebox(wookieesWereHere, player, jukebox, "On")
+                    JukeboxMenus.onUseJukebox(wookieesWereHere, player, jukebox, "On", trackType)
                 end
             )
 
@@ -82,7 +86,7 @@ Jukebox.playTrackFromInventory = function(playerIndex, menu, stack)
             local toggleQueueLockText = (jukeboxData.queueLocked and Jukebox.translation.unlockQueue) or Jukebox.translation.lockQueue
 
             -- These options are meaningless with only a single song in the box.
-            if #jukeboxData.playlist > 1 then
+            if playlistSize > 1 then
 
                 local jukeboxMainMenu = menu:getNew(menu)
     
@@ -140,7 +144,7 @@ Jukebox.playTrackFromInventory = function(playerIndex, menu, stack)
 				local loopingIndex = (jukeboxData.currentIndex % #jukeboxData.playlist) + 1
 				
 				-- Limit to showing 30 songs by default to avoid menu lag.
-				local queuedRemaining = Jukebox.mod.options.showEveryTrackUsingContextMenu and jukeboxData.queueSize or 30
+				local queuedRemaining = Jukebox.mod.options.showEveryTrackInJukeboxQueue and jukeboxData.queueSize or 30
 
 				alreadyLoaded = {}
 

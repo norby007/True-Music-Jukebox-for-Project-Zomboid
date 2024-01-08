@@ -1,0 +1,26 @@
+Sandbox_UA = {
+	
+	Sandbox_TrueMusicJukebox = "True Music Jukebox",
+	
+	Sandbox_forceThreeDimensionalAudio = "Нав'язати гравцям 3D аудіо ефект",
+    Sandbox_forceThreeDimensionalAudio_tooltip = "Змусити гравців використовувати 3D аудіо ефект, щоб звук<br>взаємодіяв з кімнатами та стінами. На нашу думку, так музика звучатиме гірше,<br>тому радимо вимкнути цю функцію і дозволити гравцям самим обрати кращий звуковий режим,<br>оснований на їх внутрішньоігрових налаштуваннях. За замовчуванням цей мод використовує свій власний звуковий 3D режим.",
+	
+	Sandbox_jukeboxesAttractZombies = "Дозволити музичному автомату привертати зомбі",
+	Sandbox_jukeboxesAttractZombies_tooltip = "Відключення цього параметру прибере можливість привертати зомбі музичним автоматом.",
+
+	Sandbox_partyPooper = "Душніла вечірки",
+	Sandbox_partyPooper_tooltip = "У Героя музичних автоматів після його спавну не з'являється стартовий набір для збирання музичного автомата.",
+
+	Sandbox_heroStarterTracks = "Стартовий набір музики Героя музичних автоматів",
+	Sandbox_heroStarterTracks = "Скільки випадкових касет та вінілів отримає Герой музичних автоматів під час створення персонажа?",
+
+	Sandbox_maxRange = "Максимальний діапазон чутності музики",
+	Sandbox_maxRange_tooltip = "Хочете почути музичний автомат по всьому місту? Спробуйте розширити значення в розумних рамках. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_literatureFrequencyMultiplier = "Множник появи навчальної літератури",
+	Sandbox_literatureFrequencyMultiplier_tooltip = "Відрегулює базову частоту появи навчальних книг зі створення музичного автомата. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_starterKitFrequencyMultiplier = "Множник появи стартового комплекту",
+	Sandbox_starterKitFrequencyMultiplier_tooltip = "Відрегулює базовую частоту появи стартового комплекту. <RGB:1.0,0.6,0.0> "
+
+}

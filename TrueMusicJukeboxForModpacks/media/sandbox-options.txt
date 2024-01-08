@@ -14,10 +14,26 @@ option TrueMusicJukebox.jukeboxesAttractZombies = {
 	translation = TrueMusicJukebox.jukeboxesAttractZombies
 }
 
+option TrueMusicJukebox.partyPooper = {
+	type = boolean,
+	default = false,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.partyPooper
+}
+
+option TrueMusicJukebox.heroStarterTracks = {
+	type = integer,
+	min = 0,
+	max = 110,
+	default = 11,
+	page = TrueMusicJukebox,
+	translation = TrueMusicJukebox.heroStarterTracks
+}
+
 option TrueMusicJukebox.maxRange = {
 	type = integer,
-	min = 5,
-	max = 5000,
+	min = 1,
+	max = 110000,
 	default = 50,
 	page = TrueMusicJukebox,
 	translation = TrueMusicJukebox.maxRange

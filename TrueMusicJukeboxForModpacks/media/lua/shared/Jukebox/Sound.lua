@@ -5,6 +5,7 @@ function JukeboxSound:new()
 	setmetatable(o, self)
 	self.__index = self
 
+	o.changing = false
 	o.distance = Jukebox.maxRange
 	o.emitter = nil
 	o.id = nil
@@ -13,7 +14,6 @@ function JukeboxSound:new()
 	o.z = 0
 	o.volume = 0
 	o.sound3d = (SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.forceThreeDimensionalAudio) or Jukebox.mod.options.threeDimensionalAudio
-	o.lightsource = nil
 
 	return o
 end
@@ -22,7 +22,6 @@ function JukeboxSound:setEmitter(emitter)
 	self.emitter = emitter
 end
 
--- :sob:
 function JukeboxSound:setPosition(x, y, z)
 	self.x = x
 	self.y = y
@@ -59,7 +58,9 @@ function JukeboxSound:setVolume(volume, distance)
 
 	if self.sound3d then
 		-- Let game handle distance in 3D mode.
-		self.emitter:setVolume(self.id, self.volume)
+		local modifier = self.volume * 1.2
+
+		self.emitter:setVolume(self.id, self.volume * modifier) --> Gives 3D similar max loudness to non-3D.
 	else
 		-- Default if not supplied.
 		self.distance = distance or self.distance or self.maxRange

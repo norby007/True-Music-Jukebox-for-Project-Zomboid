@@ -3,7 +3,7 @@ require "Jukebox/Objects"
 
 Jukebox = Jukebox or {}
 
-Jukebox.version = 4
+Jukebox.version = 6
 
 Jukebox.translation = {
 	playNow = getText("UI_TrueMusicJukebox_playNow"),
@@ -50,27 +50,34 @@ Jukebox.translation = {
 	willPlayLast = getText("UI_TrueMusicJukebox_feedback_willPlayLast"),
 	now = getText("UI_TrueMusicJukebox_feedback_now"),
 	next = getText("UI_TrueMusicJukebox_feedback_next"),
+	movingTooFast = getText("UI_TrueMusicJukebox_feedback_movingTooFast"),
 
 	hideTracklistFromContextMenu = getText("UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu"),
-	showEveryTrackUsingContextMenu = getText("UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu"),
+	showEveryTrackInJukeboxPlaylist = getText("UI_TrueMusicJukebox_MO_showEveryTrackInJukeboxPlaylist"),
+	showEveryTrackInJukeboxQueue = getText("UI_TrueMusicJukebox_MO_showEveryTrackInJukeboxQueue"),
 	threeDimensionalAudio = getText("UI_TrueMusicJukebox_MO_threeDimensionalAudio"),
 	alwaysTellMyFriends = getText("UI_TrueMusicJukebox_MO_alwaysTellMyFriends"),
 	feedbackAccessibilityMode = getText("UI_TrueMusicJukebox_MO_feedbackAccessibilityMode"),
 	accessibilityModeDisplayTime = getText("UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime"),
 
 	hideTracklistFromContextMenuTooltip = getText("UI_TrueMusicJukebox_MO_hideTracklistFromContextMenu_tooltip"),
-	showEveryTrackUsingContextMenuTooltip = getText("UI_TrueMusicJukebox_MO_showEveryTrackUsingContextMenu_tooltip"),
+	showEveryTrackInJukeboxPlaylistTooltip = getText("UI_TrueMusicJukebox_MO_showEveryTrackInJukeboxPlaylist_tooltip"),
+	showEveryTrackInJukeboxQueueTooltip = getText("UI_TrueMusicJukebox_MO_showEveryTrackInJukeboxQueue_tooltip"),
 	threeDimensionalAudioTooltip = getText("UI_TrueMusicJukebox_MO_threeDimensionalAudio_tooltip"),
 	alwaysTellMyFriendsTooltip = getText("UI_TrueMusicJukebox_MO_alwaysTellMyFriends_tooltip"),
 	feedbackAccessibilityModeTooltip = getText("UI_TrueMusicJukebox_MO_feedbackAccessibilityMode_tooltip"),
-	accessibilityModeDisplayTimeTooltip = getText("UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime_tooltip")
+	accessibilityModeDisplayTimeTooltip = getText("UI_TrueMusicJukebox_MO_accessibilityModeDisplayTime_tooltip"),
+
+	jukeboxHero = getText("UI_TrueMusicJukebox_jukeboxHero"),
+	jukeboxHeroTooltip = getText("UI_TrueMusicJukebox_jukeboxHero_tooltip")
 }
 
 Jukebox.mod = {
 
     options = {
         hideTracklistFromContextMenu = false,
-        showEveryTrackUsingContextMenu = false,
+        showEveryTrackInJukeboxPlaylist = false,
+        showEveryTrackInJukeboxQueue = false,
 		threeDimensionalAudio = false,
 		alwaysTellMyFriends = false,
 		feedbackAccessibilityMode = false,
@@ -79,7 +86,8 @@ Jukebox.mod = {
 
     names = {
         hideTracklistFromContextMenu = Jukebox.translation.hideTracklistFromContextMenu,
-        showEveryTrackUsingContextMenu = Jukebox.translation.showEveryTrackUsingContextMenu,
+        showEveryTrackInJukeboxPlaylist = Jukebox.translation.showEveryTrackInJukeboxPlaylist,
+        showEveryTrackInJukeboxQueue = Jukebox.translation.showEveryTrackInJukeboxQueue,
 		threeDimensionalAudio = Jukebox.translation.threeDimensionalAudio,
 		alwaysTellMyFriends = Jukebox.translation.alwaysTellMyFriends,
 		feedbackAccessibilityMode = Jukebox.translation.feedbackAccessibilityMode,
@@ -100,14 +108,16 @@ Jukebox.loadModOptions = function()
         Jukebox.modSettings = ModOptions:getInstance(Jukebox.mod)
 
         local hideTracklistFromContextMenu = Jukebox.modSettings:getData("hideTracklistFromContextMenu")
-        local showEveryTrackUsingContextMenu = Jukebox.modSettings:getData("showEveryTrackUsingContextMenu")
+        local showEveryTrackInJukeboxPlaylist = Jukebox.modSettings:getData("showEveryTrackInJukeboxPlaylist")
+        local showEveryTrackInJukeboxQueue = Jukebox.modSettings:getData("showEveryTrackInJukeboxQueue")
 		local threeDimensionalAudio = Jukebox.modSettings:getData("threeDimensionalAudio")
 		local alwaysTellMyFriends = Jukebox.modSettings:getData("alwaysTellMyFriends")
 		local feedbackAccessibilityMode = Jukebox.modSettings:getData("feedbackAccessibilityMode")
 		local accessibilityModeDisplayTime = Jukebox.modSettings:getData("accessibilityModeDisplayTime")
 
         hideTracklistFromContextMenu.tooltip = Jukebox.translation.hideTracklistFromContextMenuTooltip
-        showEveryTrackUsingContextMenu.tooltip = Jukebox.translation.showEveryTrackUsingContextMenuTooltip
+        showEveryTrackInJukeboxPlaylist.tooltip = Jukebox.translation.showEveryTrackInJukeboxPlaylistTooltip
+        showEveryTrackInJukeboxQueue.tooltip = Jukebox.translation.showEveryTrackInJukeboxQueueTooltip
 		threeDimensionalAudio.tooltip = Jukebox.translation.threeDimensionalAudioTooltip
 		alwaysTellMyFriends.tooltip = Jukebox.translation.alwaysTellMyFriendsTooltip
 		feedbackAccessibilityMode.tooltip = Jukebox.translation.feedbackAccessibilityModeTooltip
@@ -139,6 +149,9 @@ Jukebox.loadModOptions()
 -- but this should be manageable within reason, and much more manageable than the alternative of 
 -- updating every jukebox on the same tick.
 Jukebox.batches = 10
+
+-- Cycles from 1 - batches during updateSound.
+Jukebox.batchIndex = Jukebox.batches
 
 -- Used to prevent sending duplicate signals through server from multiple clients.
 Jukebox.ticksBeforeCycle = 100000
@@ -189,12 +202,22 @@ end
 -- position => float x, y, z
 -- location => floored { x, y, z } (as a table where [x] = floored x coordinate)
 -- key => floored "x, y, z" (as a string with spaces)
-Jukebox.locationToKey = function(jukeboxData)
+Jukebox.dataToKey = function(jukeboxData)
 	if not jukeboxData then return end
 
 	local x = math.floor(jukeboxData.x)
 	local y = math.floor(jukeboxData.y)
 	local z = math.floor(jukeboxData.z)
+
+	return x .. ", " .. y .. ", " .. z
+end
+
+Jukebox.squareToKey = function(square)
+	if not square then return end
+
+	local x = math.floor(square:getX())
+	local y = math.floor(square:getY())
+	local z = math.floor(square:getZ())
 
 	return x .. ", " .. y .. ", " .. z
 end
@@ -211,6 +234,55 @@ Jukebox.keyToLocation = function(key)
 	return { x = x, y = y, z = z } 
 end
 
+-- Shallow table copy. We only use this to copy queues during various updates.
+Jukebox.shallowCopy = function(original)
+	if not original then return end
+	
+	local copy = {}
+
+	for key, value in pairs(original) do
+		copy[key] = value
+	end
+
+	return copy
+end
+
+----------------------------------
+
+Jukebox.addBatchedKey = function(key, batch)
+	if not (key and batch) then return end
+
+	local keyData = Jukebox.batchedKeyData[batch]
+
+	if not keyData[key] then 
+		keyData[key] = true -- location is now in the table
+		keyData[#keyData + 1] = key
+	end
+end
+
+Jukebox.removeBatchedKey = function(key, batch, index)
+	if not (key and batch) then return end
+
+	local keyData = Jukebox.batchedKeyData[batch]
+
+	if keyData[key] then
+		if index and keyData[index] == key then
+			table.remove(keyData, index)
+			keyData[key] = nil
+			return
+		end
+
+		for index, value in ipairs(keyData) do
+			if value == key then
+				table.remove(keyData, index)
+				keyData[key] = nil
+				return
+			end
+		end 
+	end
+end
+----------------------------------
+
 Jukebox.initializeTimeVariables = function()
 	if Jukebox.timeVariablesInitialized then return end
 
@@ -224,6 +296,7 @@ end
 
 Jukebox.beginActiveTracks = function()
 
+	if Jukebox.ready then return end
 	-- Initialize max range based on sandbox options.
 	Jukebox.maxRange = SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.maxRange or Jukebox.maxRange
 
@@ -231,7 +304,18 @@ Jukebox.beginActiveTracks = function()
 
 	Jukebox.feedback = Jukebox.feedback or JukeboxFeedback:new(0, 60, { r = 0, g = 0, b = 0, a = 1 })
 
-	for key in pairs(Jukebox.activeLocations) do repeat
+	local locationsNeedingCleared = {}
+
+	local locationsNeedCleared = false
+
+	for key, jukeboxData in pairs(Jukebox.activeLocations) do repeat
+		if jukeboxData == true then -- Prior version of this mod. Clear data and be done.
+			Jukebox.activeLocations[key] = nil
+			locationsNeedingCleared[key] = true
+			locationsNeedCleared = true
+			break
+		end
+		
 		local location = Jukebox.keyToLocation(key)
 
 		if not location then break end
@@ -242,45 +326,91 @@ Jukebox.beginActiveTracks = function()
  
 		local square = getSquare(x, y, z)
 
-		if not square then break end
+		local jukebox = square and Jukebox.getEvolvedJukebox(square)
 
-		local jukebox = Jukebox.getEvolvedJukebox(square)
-
-		if not jukebox then
-			sendClientCommand("Jukebox", "clear", {[key] = true, x = x, y = y, z = z})
+		if square and not jukebox then -- Jukebox moved; clear data and move along.
+			Jukebox.removeBatchedKey(key, jukeboxData.batch)
+			Jukebox.activeLocations[key] = nil
+			locationsNeedingCleared[key] = true
+			locationsNeedCleared = true
 			break
 		end
+		
+		Jukebox.addBatchedKey(key, jukeboxData.batch)
 
-		local jukeboxData = jukebox:getModData()
+		-- Guarantee that these variables exist.
+		jukeboxData.x = x
+		jukeboxData.y = y
+		jukeboxData.z = z
 
-		jukeboxData.x = jukebox:getX()
-		jukeboxData.y = jukebox:getY()
-		jukeboxData.z = jukebox:getZ()
+		local player = getPlayer() -- Doesn't really matter if player 1 or 2 in splitscreen.
+		
+		jukeboxData.player = {
+			x = math.floor(player:getX()),
+			y = math.floor(player:getY()),
+			z = math.floor(player:getZ())
+		}
 
-		jukeboxData.tick = Jukebox.getTime()
+		-- Just accept latest mod data if you can't check the object to confirm.
+		local playlistReady = true
 
-		if Jukebox.initializePlaylist(jukebox) and jukeboxData.hasPlayableTracks and jukeboxData.on then
+		-- By default, playlist assumed ready, but if we can access jukebox and find it's empty,
+		-- we'll change our minds. As far as I know this is not easily reduced to one line in
+		-- combination with the line above. :(
+		if jukebox then playlistReady = Jukebox.initializePlaylist(jukebox, jukeboxData) end
+
+		if playlistReady then
+			local playlistSize = #jukeboxData.playlist
+			jukeboxData.currentIndex = (jukeboxData.currentIndex and math.min(math.max(jukeboxData.currentIndex, 1), playlistSize)) or 1
+		end
+
+		if playlistReady and jukeboxData.hasPlayableTracks and jukeboxData.on then
 			jukeboxData.currentIndex = jukeboxData.currentIndex or 1
 			-- Only play locally (for this client when it connects).
 			-- First song will end early as though skipped to stay in
 			-- sync with other players.
-			Jukebox.playSound(jukeboxData, Jukebox.getCurrentTrack(jukeboxData), true, true)
-			jukebox:transmitModData()
-		else
-			sendClientCommand("Jukebox", "clear", {[key] = true, x = x, y = y, z = z})
+			Jukebox.playSound(jukeboxData, Jukebox.getCurrentTrack(jukeboxData), false, true)
 		end
 
 	until true end
+
+	if locationsNeedCleared then
+		sendClientCommand("TrueMusicJukebox", "clear", locationsNeedingCleared)
+	end
+
+	ModData.transmit("Jukebox.activeLocations")
+
+	sendClientCommand("TrueMusicJukebox", "transmit", Jukebox.activeLocations)
+
+	-- Requests missing locations; updateSound will handle them eventually.
+	sendClientCommand(getPlayer(), "TrueMusicJukebox", "request", {}) -- Any player on this client is fine.
 
 	Jukebox.ready = true
 
 end
 
-Events.OnCreatePlayer.Add(Jukebox.beginActiveTracks)
+Jukebox.awaitClientCommandAbility = function()
+	Jukebox.waitTicks = (Jukebox.waitTicks and (Jukebox.waitTicks - 1)) or 5
+
+	if Jukebox.waitTicks == 5 then
+		Events.OnTick.Add(Jukebox.awaitClientCommandAbility)
+	elseif Jukebox.waitTicks == 0 then
+		Jukebox.waitTicks = nil
+		Events.OnTick.Remove(Jukebox.awaitClientCommandAbility)
+		Jukebox.beginActiveTracks()
+	end
+end
+
+Events.OnCreatePlayer.Add(Jukebox.awaitClientCommandAbility)
 
 Jukebox.processClientsideLocationData = function()
 	Jukebox.activeLocations = ModData.getOrCreate("Jukebox.activeLocations")
-	sendClientCommand("Jukebox", "transmit", Jukebox.activeLocations)
+	Jukebox.batchedKeyData = {}
+
+	for index = 1, Jukebox.batches do
+		Jukebox.batchedKeyData[index] = {}
+	end
+
 	ModData.transmit("Jukebox.activeLocations")
 end
 
@@ -318,24 +448,62 @@ Jukebox.dequeueTrack = function(jukeboxData, trackType)
 	end
 end
 
+Jukebox.requeueTrack = function(jukeboxData, trackType)
+	if not trackType then return end
+
+	Jukebox.removeTrack(jukeboxData, trackType)
+	-- Must do this after the dequeue adjusts the playlist's index.
+	local nextIndex = Jukebox.getNextIndex(jukeboxData)
+	local possibleNext = (nextIndex + jukeboxData.queueSize) % #jukeboxData.playlist
+	nextIndex = (possibleNext == 0 and #jukeboxData.playlist) or possibleNext
+	Jukebox.enqueueTrack(jukeboxData, trackType)
+	Jukebox.insertTrack(jukeboxData, trackType, nil, nextIndex)
+end
+
+-- Intended to avoid throwing away queue data when timing of commands is unpredictable.
+Jukebox.mergeQueues = function(jukeboxDataClientside, jukeboxDataInbound)
+
+	if not (type(jukeboxDataClientside) == "table" and type(jukeboxDataInbound) == "table") then return end 
+
+	local newQueue = {}
+
+	newQueueSize = 0
+
+	for key in pairs(jukeboxDataClientside.queue) do
+		if not newQueue[key] then
+			newQueue[key] = true
+			newQueueSize = newQueueSize + 1
+		end
+	end
+
+	for key in pairs(jukeboxDataInbound.queue) do
+		if not newQueue[key] then
+			newQueue[key] = true
+			newQueueSize = newQueueSize + 1
+		end
+	end
+
+	return { queue = newQueue, queueSize = newQueueSize }
+
+end
+
 -- Add track to current playlist
-Jukebox.insertTrack = function(jukebox, trackType, trackName, trackIndex) 
-    local playlist = jukebox:getModData().playlist 
+Jukebox.insertTrack = function(jukeboxData, trackType, trackName, trackIndex) 
+    local playlist = jukeboxData.playlist 
 
 	trackIndex = trackIndex or (#playlist + 1)
 
-	table.insert(jukebox:getModData().playlist, trackIndex, trackType)
+	table.insert(jukeboxData.playlist, trackIndex, trackType)
 
 	-- Used to convert types to full names.
 
 	if not trackName then return end
 
-	jukebox:getModData().titles[trackType] = Jukebox.prettyName(trackName)
+	jukeboxData.titles[trackType] = Jukebox.prettyName(trackName)
 end
 
 -- Remove trackType from playlist
-Jukebox.removeTrack = function(jukebox, trackType)
-	local jukeboxData = jukebox:getModData()
+Jukebox.removeTrack = function(jukeboxData, trackType)
     local playlist = jukeboxData.playlist
     if not playlist then return end -- The playlist for this jukebox has never been created.
 
@@ -361,36 +529,35 @@ Jukebox.removeTrack = function(jukebox, trackType)
 			end
 
 			if #jukeboxData.playlist == 0 then
-				local key = Jukebox.locationToKey(jukeboxData)
+				local key = Jukebox.dataToKey(jukeboxData)
 				if Jukebox.activeTracks[key] and Jukebox.activeTracks[key].sound then
 					Jukebox.activeTracks[key].sound:stop()
 					Jukebox.activeTracks[key] = nil
-					sendClientCommand("Jukebox", "clear", {[key] = true, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
 				end
 				if jukeboxData.on then
-					jukebox:getSquare():playSound("LightSwitch")
+					local square = getSquare(jukeboxData.x, jukeboxData.y, jukeboxData.z)
+					if square then square:playSound("LightSwitch") end
 					jukeboxData.on = false
 				end
-				jukebox:transmitModData()
+				sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
 			elseif skipNeeded then
-				Jukebox.skipCurrentTrack(jukebox)
+				sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+				sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
 			end
+
+			ModData.transmit("Jukebox.activeLocations")
 
             return index, shift
         end
     end
 end
 
-Jukebox.clearQueue = function(jukebox)
+Jukebox.clearQueue = function(jukeboxData)
 
-	if not jukebox then return end
-
-	local jukeboxData = jukebox:getModData()
+	if not jukeboxData then return end
 
 	jukeboxData.queue = {}
 	jukeboxData.queueSize = 0
-
-	jukebox:transmitModData()
 
 end
 
@@ -434,40 +601,71 @@ Jukebox.random = function(max)
     return ZombRand(max) + 1
 end
 
-Jukebox.shuffle = function(jukebox)
-	local jukeboxData = jukebox:getModData()
+Jukebox.shuffle = function(jukeboxData)
+
+	if not jukeboxData then return {} end
+
 	local currentTrack = Jukebox.getCurrentTrack(jukeboxData)
+
 	local playlist = jukeboxData.playlist
-    for index = #playlist, 2, -1 do
-        local swap = Jukebox.random(index)
-        playlist[index], playlist[swap] = playlist[swap], playlist[index]
-    end
+
+	local playlistShuffled = {}
+	local tracksRequiringRequeue = {}
+	
+	while #playlist > 0 do
+		local next = Jukebox.random(#playlist)
+		if jukeboxData.queue[playlist[next]] then
+			tracksRequiringRequeue[#tracksRequiringRequeue + 1] = playlist[next]
+		else
+			playlistShuffled[#playlistShuffled + 1] = playlist[next]
+		end
+		
+		table.remove(playlist, next)
+	end
+
+	jukeboxData.playlist = playlistShuffled
 
 	if currentTrack then
 		local newIndex = Jukebox.getTrackIndex(jukeboxData, currentTrack)
-		jukeboxData.currentIndex = newIndex
+		jukeboxData.currentIndex = newIndex or 1
 	end
 
-	jukebox:transmitModData()
+	for index, value in ipairs(tracksRequiringRequeue) do
+		local adjustment = index -- if track not in the queue, i.e., if queue is unlocked.
+		if currentTrack and jukeboxData.queue[currentTrack] then 
+			-- queue is locked because otherwise now playing track would dequeue.
+			adjustment = adjustment - 1 
+		end
+		table.insert(jukeboxData.playlist, jukeboxData.currentIndex + adjustment, value)
+	end
+
 end
 
-Jukebox.initializePlaylist = function(jukebox)
+Jukebox.initializePlaylist = function(jukebox, jukeboxData)
 
 	local jukeboxItems = jukebox:getItemContainer():getItems()
-	local jukeboxData = jukebox:getModData()
-	
-	if not jukeboxItems or jukeboxItems:size() == 0 then 
+
+	local key = Jukebox.dataToKey(jukeboxData)
+
+	-- Making sure hasPlayableTracks is true will prevent this from spamming
+	-- the network with transmit calls; clients will do this exactly once each at most before
+	-- data will hopefully be synced. Some clients may never do this if another client fixes
+	-- their data by network transfer before this event triggers.
+	if jukeboxData.hasPlayableTracks and (not jukeboxItems or jukeboxItems:size() == 0) then 
 		jukeboxData.playlist = {}
 		jukeboxData.playlistSize = 0
 		jukeboxData.hasPlayableTracks = false
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 		return 
 	end
 
 	local tracksRequiringRequeue = {}
 
-    -- If this playlist exists, it is itself; otherwise we create it now.
-	if jukeboxData.playlistSize ~= jukeboxItems:size() then
+	-- If this playlist has the right size, we assume we're good; otherwise we recreate it now.
+	if jukeboxData.playlistSize == jukeboxItems:size() then 
+		return true
+	else
 		local currentTrack = Jukebox.getCurrentTrack(jukeboxData)
 
 		jukeboxData.playlist = {}
@@ -484,7 +682,7 @@ Jukebox.initializePlaylist = function(jukebox)
 				if jukeboxData.queue[item:getType()] then
 					tracksRequiringRequeue[#tracksRequiringRequeue + 1] = item:getType()
 				end
-				Jukebox.insertTrack(jukebox, item:getType(), item:getDisplayName())
+				Jukebox.insertTrack(jukeboxData, item:getType(), item:getDisplayName())
 				if (not jukeboxData.hasPlayableTracks) and Jukebox.getSoundFile(item:getType()) then
 					jukeboxData.hasPlayableTracks = true
 				end
@@ -492,27 +690,27 @@ Jukebox.initializePlaylist = function(jukebox)
 		end
 
 		if currentTrack then
-			jukeboxData.currentIndex = Jukebox.getTrackIndex(jukeboxData, currentTrack)
+			jukeboxData.currentIndex = Jukebox.getTrackIndex(jukeboxData, currentTrack) or 1 -- Fuckin woops.
 		end
 
+		jukeboxData.queue = {}
+		jukeboxData.queueSize = 0
+
 		for index, trackType in ipairs(tracksRequiringRequeue) do
-			Jukebox.removeTrack(jukebox, trackType)
-			Jukebox.insertTrack(jukebox, trackType, nil, jukeboxData.currentIndex + index)
-			Jukebox.enqueueTrack(jukeboxData, trackType)
+			if Jukebox.getTrackIndex(jukeboxData, trackType) then
+				Jukebox.removeTrack(jukeboxData, trackType)
+				Jukebox.insertTrack(jukeboxData, trackType, nil, jukeboxData.currentIndex + index)
+				Jukebox.enqueueTrack(jukeboxData, trackType)
+			end
 		end
 
 		jukeboxData.playlistSize = jukeboxItems:size()
 	end
 
-	jukebox:transmitModData()
+	sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+	ModData.transmit("Jukebox.activeLocations")
 
 	return true
-end
-
-Jukebox.skipCurrentTrack = function(jukebox)
-	jukebox:getModData().skippingTrack = false -- Will be set when first client triggers the skip.
-	jukebox:getModData().skip = true
-	jukebox:transmitModData()
 end
 
 Jukebox.seekNextQueuedIndex = function(jukeboxData)
@@ -555,20 +753,52 @@ Jukebox.maxRange = 50
 
 Jukebox.playSound = function(jukeboxData, trackType, playNow, beginMuted)
 	if not (jukeboxData and trackType) then return end
-	
-	local key = Jukebox.locationToKey(jukeboxData)
+
+	local key = Jukebox.dataToKey(jukeboxData)
+
+	local bail = false
 
 	if Jukebox.activeTracks[key] then 
-		if playNow then
+		-- elapsed is used for stutter-start prevention.
+		if playNow and Jukebox.activeTracks[key].elapsed > 15 then
 			Jukebox.activeTracks[key].sound:stop()
-		else return end
+		else 
+			bail = true
+		end
 	end
 
+	jukeboxData.skip = false
+	
+	jukeboxData.replayedFromQueue = false
+
+	if bail then return end
+
 	Jukebox.dequeueTrack(jukeboxData, trackType)
+
+	local player = getPlayer() -- Just needs to be any local player with a valid location.
+
+	if player and player:getX() then
+		jukeboxData.player = {
+			x = math.floor(player:getX()),
+			y = math.floor(player:getY()),
+			z = math.floor(player:getZ())
+		}
+	else return end
+	
+	-- We get this every time because it may change and it doesn't take long.
+	-- In the future, we could use a global variable here and a Mod Options update
+	-- function, but that's micro-optimization in Burryaga's stupid opinion.
+	local threeDimensionalAudio = (SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.forceThreeDimensionalAudio) or Jukebox.mod.options.threeDimensionalAudio
 	
 	local sound = JukeboxSound:new()
 
-	sound:setPosition(jukeboxData.x, jukeboxData.y, jukeboxData.z)
+	sound.priorThreeDimensionalAudioState = threeDimensionalAudio
+
+	if threeDimensionalAudio then
+		sound:setPosition(jukeboxData.x, jukeboxData.y, jukeboxData.z)
+	else
+		sound:setPosition(jukeboxData.player.x, jukeboxData.player.y, jukeboxData.player.z)
+	end
 
 	if beginMuted then
 		sound:setVolume(0, Jukebox.maxRange)
@@ -576,12 +806,8 @@ Jukebox.playSound = function(jukeboxData, trackType, playNow, beginMuted)
 		sound:setVolume(jukeboxData.volume, Jukebox.getDistance(jukeboxData))
 	end
 
-	local threeDimensionalAudio = (SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.forceThreeDimensionalAudio) or Jukebox.mod.options.threeDimensionalAudio
-
 	sound:set3D(threeDimensionalAudio)
 	sound:play(trackType)
-
-	jukeboxData.skippingTrack = false
 
 	Jukebox.activeTracks[key] = {
 		sound = sound,
@@ -589,14 +815,15 @@ Jukebox.playSound = function(jukeboxData, trackType, playNow, beginMuted)
 		x = jukeboxData.x,
 		y = jukeboxData.y,
 		z = jukeboxData.z,
-		batch = jukeboxData.batch
+		player = jukeboxData.player,
+		batch = jukeboxData.batch,
+		elapsed = 0
 	}
 	
-	Jukebox.activeLocations[key] = true
-	sendClientCommand("Jukebox", "transmit", Jukebox.activeLocations)
+	Jukebox.activeLocations[key] = jukeboxData
+	Jukebox.addBatchedKey(key, jukeboxData.batch)
+	sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
 	ModData.transmit("Jukebox.activeLocations")
-
-	print("Client is trying to transmit activeLocations to server.")
 	
 	return Jukebox.activeTracks[key]
 end
@@ -650,11 +877,14 @@ Jukebox.getDistance = function(jukeboxData)
 end
 
 Jukebox.replace = function(jukebox)
+	local key = Jukebox.squareToKey(jukebox:getSquare())
 
-	local jukeboxData = jukebox:getModData()
-	
-	if not (jukebox:getContainer() and jukeboxData 
-	   and jukeboxData.version == Jukebox.version) then
+	-- If value is not true, then it is either nil or a table.
+	Jukebox.activeLocations[key] = (Jukebox.activeLocations[key] ~= true and Jukebox.activeLocations[key]) or {}
+
+	local jukeboxData = Jukebox.activeLocations[key]
+
+	if jukeboxData.version ~= Jukebox.version or not jukebox:getContainer() then
 		local square = jukebox:getSquare()
 		local sprite = jukebox:getSprite():getName()
 		local index = jukebox:getObjectIndex()
@@ -677,8 +907,15 @@ Jukebox.replace = function(jukebox)
 			jukebox:transmitUpdatedSpriteToServer()
 
 			-- New jukebox, new mod data.
-			jukeboxData = jukebox:getModData()
+			-- jukeboxData = jukebox:getModData()
+			Jukebox.activeLocations[key] = {}
+
+			jukeboxData = Jukebox.activeLocations[key]	
 		end
+
+		jukeboxData.x = math.floor(jukebox:getX())
+		jukeboxData.y = math.floor(jukebox:getY())
+		jukeboxData.z = math.floor(jukebox:getZ())	
 
 		-- See Jukebox/Utility.lua
 		-- batchIndex changes OnTick, so Jukebox
@@ -690,7 +927,7 @@ Jukebox.replace = function(jukebox)
 		-- in the same batch, thus defeating the purpose of batches).
 		jukeboxData.batch = Jukebox.batchIndex
 
-		jukeboxData.tick = 0
+		-- jukeboxData.tick = 0
 
 		jukeboxData.on = false
 		jukeboxData.skip = false
@@ -705,9 +942,9 @@ Jukebox.replace = function(jukebox)
 		-- Size of Playlist
 		jukeboxData.playlistSize = 0
 		-- Queue
-		jukeboxData.queue = jukeboxData.queue or {} --> Preserve queue
+		jukeboxData.queue = jukeboxData.queue or {} --> Preserves old queue
 		-- Size of Queue
-		jukeboxData.queueSize = jukeboxData.queueSize or 0 --> Preserve queueSize
+		jukeboxData.queueSize = jukeboxData.queueSize or 0 --> Preserves old queueSize
 
 		-- Queue Mode
 		jukeboxData.queueLocked = false
@@ -727,7 +964,9 @@ Jukebox.replace = function(jukebox)
 		-- Used to force updates on existing jukeboxes.
 		jukeboxData.version = Jukebox.version
 
-		jukebox:transmitModData()
+		ModData.transmit("Jukebox.activeLocations")
+
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
 	end
 
 	return jukebox
@@ -758,32 +997,50 @@ Jukebox.getEvolvedJukebox = function(square)
     end
 end
 
-Jukebox.playLaterTick = 1
-
-Jukebox.playLater = function()
-	Jukebox.playLaterTick = (Jukebox.playLaterTick % 30) + 1
-	
-	if Jukebox.playLaterTick ~= 1 then return end
-
-	local player = Jukebox.latest.player
-	local jukebox = Jukebox.latest.jukebox
-	local musicChoice = Jukebox.latest.musicChoice
-	local trackType = Jukebox.latest.trackType
-
-	JukeboxMenus.onUseJukebox(wookieesWereHere, player, jukebox, musicChoice, trackType)
-
-	Events.OnTick.Remove(Jukebox.playLater)
+Jukebox.logCurrentTime = function()
+	print(Jukebox.getTime() * 3600)
 end
 
-Jukebox.batchIndex = 1
-
 Jukebox.updateSound = function()
-
 	if not Jukebox.ready then return end --> True Music Jukebox has not yet initialized properly.
 
-	-- For each jukebox that is playing music...
-	for key in pairs(Jukebox.activeLocations) do repeat
+	Jukebox.batchIndex = (Jukebox.batchIndex % Jukebox.batches) + 1
+
+	local threeDimensionalAudio = (SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.forceThreeDimensionalAudio) or Jukebox.mod.options.threeDimensionalAudio
+
+	local keyData = Jukebox.batchedKeyData[Jukebox.batchIndex]
+	
+	-- For each jukebox that is playing music in this batch...
+	for index = #keyData, 1, -1 do repeat
+		local key = keyData[index]
+		local jukeboxData = key and Jukebox.activeLocations[key]
+
+		if not jukeboxData then break end -- Something wonky; maybe transitioning.
+	
+		-- Destroy deprecated Jukebox data.
+		if jukeboxData == true then 
+			Jukebox.activeLocations[key] = nil
+			sendClientCommand("TrueMusicJukebox", "clear", {[key] = true})
+			ModData.transmit("Jukebox.activeLocations")
+			break
+		end
+
+		-- In theory no longer needed
+		-- if jukeboxData.batch ~= Jukebox.batchIndex then break end
+
 		local activeTrack = Jukebox.activeTracks[key]
+
+		if jukeboxData and not jukeboxData.on then 
+			if Jukebox.activeTracks[key] then
+				activeTrack.sound:stop()
+				Jukebox.activeTracks[key] = nil
+			end
+			break 
+		end
+
+		if activeTrack then
+			activeTrack.elapsed = activeTrack.elapsed + 1
+		end
 
 		local sound = activeTrack and activeTrack.sound
 
@@ -791,33 +1048,25 @@ Jukebox.updateSound = function()
 
 		local square = getSquare(location.x, location.y, location.z)
 
-		if not square then --> Square unreachable. Fix volume of sound. Do not assume jukebox off.
-			if sound then
-				sound.lostConnection = true
-				if activeTrack.batch == Jukebox.batchIndex then
-					local distance = Jukebox.getDistance(activeTrack)
-					sound:setVolume(sound.volume, distance)
-				end
-			end
-			break 
+		local jukebox = square and Jukebox.getEvolvedJukebox(square)
+	
+		if square and not jukebox then --> Jukebox moved, destroy active location.
+			Jukebox.activeLocations[key] = nil
+			Jukebox.removeBatchedKey(key, jukeboxData.batch, index)
+			sendClientCommand("TrueMusicJukebox", "clear", {[key] = true, x = location.x, y = location.y, z = location.z})
+			ModData.transmit("Jukebox.activeLocations")
+			break
 		end
 
-		local jukebox = Jukebox.getEvolvedJukebox(square)
-
-		local jukeboxData = jukebox and jukebox:getModData()
-
-		if not (jukeboxData and jukeboxData.on) then --> Jukebox either moved or off. Destroy sound record.
-			if activeTrack then
+		if not (jukeboxData and jukeboxData.on) then --> Jukebox off. Destroy sound record.
+			if sound then
 				activeTrack.sound:stop()
 				Jukebox.activeTracks[key] = nil
 			end
-			sendClientCommand("Jukebox", "clear", {[key] = true, x = location.x, y = location.y, z = location.z})
 			break 
 		end
 
-		if jukeboxData.batch ~= Jukebox.batchIndex then break end
-
-		local powerProblems = not ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (SandboxVars.ElecShutModifier > -1 
+		local powerProblems = square and not ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (SandboxVars.ElecShutModifier > -1 
 			and GameTime:getInstance():getNightsSurvived() < SandboxVars.ElecShutModifier and square:isOutside() == false))
 
 		if jukeboxData.on and powerProblems then
@@ -826,23 +1075,28 @@ Jukebox.updateSound = function()
 				activeTrack.sound:stop()
 				Jukebox.activeTracks[key] = nil
 			end
-			sendClientCommand("Jukebox", "clear", {[key] = true, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
-			jukebox:transmitModData()
 			break
+		end
+
+		if jukebox then 
+			Jukebox.initializePlaylist(jukebox, jukeboxData)
 		end
 
 		local playlist = jukeboxData.playlist
 
 		jukeboxData.currentIndex = (jukeboxData.currentIndex and math.min(jukeboxData.currentIndex, #playlist)) or 1
 		
-		if (not activeTrack) and jukeboxData.on and (#playlist > 0) then
+		if (not activeTrack) and jukeboxData.on and (#playlist > 0) and not jukeboxData.skip then
+			jukeboxData.currentIndex = (jukeboxData.currentIndex and math.min(math.max(jukeboxData.currentIndex, 1), #playlist)) or 1
 			-- A sound was never initialized on this location for this client.
 			-- Would presumably result from joining server far away from an
 			-- active jukebox, thus preventing it from getting logged in this
 			-- client's activeTracks object. If we detect a jukebox at a location
 			-- we expect to be playing something, let's try to make that happen.
-			Jukebox.playSound(jukeboxData, Jukebox.getCurrentTrack(jukeboxData), true)
-			jukebox:transmitModData()
+			-- Jukebox.playSound(jukeboxData, Jukebox.getCurrentTrack(jukeboxData), false, false)
+
+			-- Maaaybe not...
+			sendClientCommand("TrueMusicJukebox", "play", jukeboxData)
 			break
 		end
 		
@@ -850,42 +1104,73 @@ Jukebox.updateSound = function()
 
 		if not sound then break end
 
-		local threeDimensionalAudio = (SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.forceThreeDimensionalAudio) or Jukebox.mod.options.threeDimensionalAudio
+		-- Toggle 3D Audio Safely at Long Range
+		if sound.priorThreeDimensionalAudioState ~= threeDimensionalAudio then
+			sound:set3D(threeDimensionalAudio)
+			if threeDimensionalAudio then
+				sound:setPosition(jukeboxData.x, jukeboxData.y, jukeboxData.z)
+			else
+				sound:setPosition(jukeboxData.player.x, jukeboxData.player.y, jukeboxData.player.z)
+				if not square then
+					sound:play(Jukebox.getCurrentTrack(jukeboxData)) -- Need to replay this sound to make it audible.
+				end
+			end
+		end
+
+		sound.priorThreeDimensionalAudioState = threeDimensionalAudio
 		
-		sound:set3D(threeDimensionalAudio)
+		local tracksWereRequeued = false
+
+		if Jukebox.delayedRequeueRequests and Jukebox.delayedRequeueRequests[key] then
+			for index = #Jukebox.delayedRequeueRequests[key], 1, -1 do
+				local requeueData = Jukebox.delayedRequeueRequests[key][index]
+				requeueData.delay = requeueData.delay - 1
+
+				if requeueData.delay == 0 then
+					tracksWereRequeued = true
+					Jukebox.delayedRequeueRequests[key][requeueData.trackType] = nil
+					Jukebox.requeueTrack(jukeboxData, requeueData.trackType)
+					table.remove(Jukebox.delayedRequeueRequests[key], index)
+				end
+			end
+			
+			if #Jukebox.delayedRequeueRequests[key] == 0 then
+				Jukebox.delayedRequeueRequests[key] = nil
+			end
+		end
+
+		if tracksWereRequeued then
+			sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+			ModData.transmit("Jukebox.activeLocations")
+		end
+
 		sound:tick()
 		
 		if sound:isPlaying() then
-			jukeboxData.changingTrack = nil
-			sound.lostConnection = nil
-
-			if not jukeboxData.on then
-				if Jukebox.activeTracks[key] then
-					Jukebox.activeTracks[key].sound:stop()
-					Jukebox.activeTracks[key] = nil
-					sendClientCommand("Jukebox", "clear", {[key] = true, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
-				end
-				break
-			elseif jukeboxData.skip and not jukeboxData.skippingTrack then
-				jukeboxData.skippingTrack = true
-				-- Log time of this command.
-				jukeboxData.tick = Jukebox.getTime()
-				jukebox:transmitModData()
-				sendClientCommand('Jukebox', 'play', jukeboxData)
-			elseif not Jukebox.hasLoaded(jukebox:getContainer(), sound:getSoundType()) then
-				-- Jukebox.removeTrack(jukebox, sound:getSoundType())
+			if jukeboxData.skip then
+				sendClientCommand("TrueMusicJukebox", "play", jukeboxData)
+				jukeboxData.skip = false
+			elseif jukebox and not Jukebox.hasLoaded(jukebox:getContainer(), sound:getSoundType()) then
 				if #jukeboxData.playlist == 0 then
 					Jukebox.activeTracks[key].sound:stop()
 					Jukebox.activeTracks[key] = nil
-					sendClientCommand("Jukebox", "clear", {[key] = true, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
-				else
-					Jukebox.skipCurrentTrack(jukebox)
+				elseif not sound.changing then
+					-- This variable is set when a command has been issued to the server
+					-- and the client is awaiting the completion of said command to reduce
+					-- spamming server with pointless requests. 
+					sound.changing = true
+
+					-- Letting server handle skip will utilize jukebox tick to prevent
+					-- double-skipping after tracks in playlist end.
+					sendClientCommand("TrueMusicJukebox", "skip", {key = key})
 				end
 				break
 			end
 
-			if SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.jukeboxesAttractZombies then
-				addSound(jukebox, jukebox:getX(), jukebox:getY(), jukebox:getZ(), Jukebox.maxRange, Jukebox.maxRange)
+			if jukebox and SandboxVars.TrueMusicJukebox and SandboxVars.TrueMusicJukebox.jukeboxesAttractZombies then
+				-- Pulling too many zombies to one location crashes the server hard. This should reduce this issue when using massive ranges.
+				local maxRangeAdjustedForServerSafety = math.min(Jukebox.maxRange, 110)
+				addSound(jukebox, jukebox:getX(), jukebox:getY(), jukebox:getZ(), maxRangeAdjustedForServerSafety, maxRangeAdjustedForServerSafety)
 			end
 
 			local distance = Jukebox.getDistance(jukeboxData)
@@ -893,28 +1178,13 @@ Jukebox.updateSound = function()
 			if sound:getVolume() ~= jukeboxData.volume or sound:getLastDistance() ~= distance then
 				sound:setVolume(jukeboxData.volume, distance)
 			end
-		elseif readyForNextTrack then
-			if activeTrack.sound.lostConnection then
-				Jukebox.playSound(jukeboxData, Jukebox.getCurrentTrack(jukeboxData))
-				activeTrack.sound.lostConnection = nil
-			else
-				Jukebox.activeTracks[key] = nil
-				sendClientCommand("Jukebox", "clear", {[key] = true, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
-				if not jukeboxData.changingTrack then
-					-- Reduces duplicate attempts to move the index due to many clients finishing a song.
-					-- Log time of this command.
-					jukeboxData.tick = Jukebox.getTime()
-					jukeboxData.changingTrack = true
-					Jukebox.skipCurrentTrack(jukebox)
-					-- Letting server handle skip will utilize jukebox tick to prevent
-					-- double-skipping after tracks in playlist end.
-					sendClientCommand("Jukebox", "skip", jukeboxData)
-				end
-			end
+		elseif readyForNextTrack and not sound.changing then
+			-- Letting server handle skip will utilize jukebox tick to prevent
+			-- double-skipping after tracks in playlist end.
+			sound.changing = true
+			sendClientCommand("TrueMusicJukebox", "skip", {key = key})
 		end
 	until true end
-
-	Jukebox.batchIndex = (Jukebox.batchIndex % Jukebox.batches) + 1
 end
 
 if not isServer() then Events.OnTick.Add(Jukebox.updateSound) end

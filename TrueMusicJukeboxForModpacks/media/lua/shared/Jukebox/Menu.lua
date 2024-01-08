@@ -4,8 +4,6 @@ require "Jukebox/Sound"
 require "Jukebox/Objects"
 require "Jukebox/Utility"
 
---
-
 JukeboxMenus = {};
 
 JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
@@ -29,18 +27,30 @@ JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
 
 	if not (jukebox and jukebox:getContainer()) then return end
 
-	local jukeboxData = jukebox:getModData()
+	local key = Jukebox.squareToKey(square)
+	
+	local activeTrack = Jukebox.activeTracks[key]
 
-	jukeboxData.x = jukebox:getX()
-	jukeboxData.y = jukebox:getY()
-	jukeboxData.z = jukebox:getZ()
+	local jukeboxData = Jukebox.activeLocations[key]
 
+	jukeboxData.x = math.floor(jukebox:getX())
+	jukeboxData.y = math.floor(jukebox:getY())
+	jukeboxData.z = math.floor(jukebox:getZ())
+
+	jukeboxData.player = {
+		x = math.floor(player:getX()),
+		y = math.floor(player:getY()),
+		z = math.floor(player:getZ())
+	}
+	
 	-- Log time of this command.
 	jukeboxData.tick = Jukebox.getTime()
 
-	Jukebox.initializePlaylist(jukebox)
+	Jukebox.initializePlaylist(jukebox, jukeboxData)
 
-	local key = Jukebox.locationToKey(jukeboxData)
+	BS = BS or {}
+
+	BS.jukeboxData = jukeboxData
 
 	-- wookieesWereHere is nonexistent; it is a nil label used to indicate unused variables in function calls.
 	if not jukeboxData.on then
@@ -56,6 +66,8 @@ JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
 		end
 
 		local playlistSize = #jukeboxData.playlist
+
+		jukeboxData.currentIndex = (jukeboxData.currentIndex and math.min(math.max(jukeboxData.currentIndex, 1), playlistSize)) or 1
 
 		local toggleQueueLockText = (jukeboxData.queueLocked and Jukebox.translation.unlockQueue) or Jukebox.translation.lockQueue
 		
@@ -89,7 +101,7 @@ JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
 					local loopingIndex = (jukeboxData.currentIndex % #jukeboxData.playlist) + 1
 					
 					-- Limit to showing 30 songs by default to avoid menu lag.
-					local queuedRemaining = Jukebox.mod.options.showEveryTrackUsingContextMenu and jukeboxData.queueSize or 30
+					local queuedRemaining = Jukebox.mod.options.showEveryTrackInJukeboxQueue and jukeboxData.queueSize or 30
 
 					local alreadyLoaded = {}
 
@@ -142,7 +154,7 @@ JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
 				local lastIndex = ((jukeboxData.currentIndex + 25) % playlistSize) + 1
 
 				-- Can   be   super   fucking   slow.
-				if Jukebox.mod.options.showEveryTrackUsingContextMenu then
+				if Jukebox.mod.options.showEveryTrackInJukeboxPlaylist then
 					firstIndex = 1
 					lastIndex = playlistSize
 				end
@@ -260,7 +272,7 @@ JukeboxMenus.doBuildMenus = function(playerIndex, menu, worldObjects)
 					jukeboxData.currentIndex = jukeboxData.currentIndex or Jukebox.random(#jukeboxData.playlist)
 	
 					if Jukebox.getSoundFile(Jukebox.getCurrentTrack(jukeboxData)) then
-						Jukebox.reportMessage(player, Jukebox.getCurrentTitle(jukeboxData) .. " is currently playing.")
+						Jukebox.reportMessage(player, Jukebox.getCurrentTitle(jukeboxData) .. Jukebox.translation.isCurrentlyPlaying)
 					else
 						Jukebox.reportMessage(player, Jukebox.translation.cannotReadLoadedItem .. Jukebox.getCurrentTitle(jukeboxData) .. ".")
 					end
@@ -279,26 +291,26 @@ Jukebox.reportEmpty = function(player)
 	Jukebox.reportMessage(player, Jukebox.translation.noMusicInJukebox)
 end
 
-Jukebox.adjustVolume = function(player, jukebox, volume)
-	jukebox:getModData().volume = Jukebox.volumes[volume]
-	jukebox:transmitModData()
+Jukebox.adjustVolume = function(player, jukeboxData, volume)
+	jukeboxData.volume = Jukebox.volumes[volume]
+	ModData.transmit("Jukebox.activeLocations")
 end
 
-Jukebox.printStatus = function(player, jukebox)
+Jukebox.printStatus = function(player, jukeboxData)
 	print("current jukebox status")
-	print("x = " .. jukebox:getX())
-	print("y = " .. jukebox:getY())
-	print("z = " .. jukebox:getZ())
+	print("x = " .. jukeboxData.x)
+	print("y = " .. jukeboxData.y)
+	print("z = " .. jukeboxData.z)
 
 	print("On, Volume, Playing, Skip?")
-	print(jukebox:getModData().on)
-	print(jukebox:getModData().skip)
-	print(jukebox:getModData().volume)
+	print(jukeboxData.on)
+	print(jukeboxData.skip)
+	print(jukeboxData.volume)
 
 	print("Playlist 1, 2, 3?")
-	print(jukebox:getModData().playlist[1])
-	print(jukebox:getModData().playlist[2])
-	print(jukebox:getModData().playlist[3])
+	print(jukeboxData.playlist[1])
+	print(jukeboxData.playlist[2])
+	print(jukeboxData.playlist[3])
 end
 
 JukeboxMenus.getFrontSquare = function(square, facing)
@@ -381,8 +393,21 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 
 	local square = jukebox:getSquare()
 
-	local jukeboxData = jukebox:getModData()
+	local key = Jukebox.squareToKey(square)
 	
+	local jukeboxData = Jukebox.activeLocations[key]
+
+	if Jukebox.activeTracks[key] and Jukebox.activeTracks[key].elapsed < 16 then 
+		Jukebox.reportMessage(player, Jukebox.translation.movingTooFast)
+		return
+	end
+	
+	-------------------DEBUG-------------------
+	print("---------ACTIVATING JUKEBOX----------")
+	Jukebox.logCurrentTime()
+	print("---------ACTIVATING JUKEBOX----------")
+	-------------------------------------------
+
 	-- Log time of this command.
 	
 	if jukeboxData.tick then
@@ -393,7 +418,7 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 		local currentTick = (currentTime >= jukeboxData.tick) and currentTime or (hoursPerDay + currentTime)
 
 		if (currentTick - jukeboxData.tick) < Jukebox.oneRealHalfSecond then
-			return print("Command sent too quickly after another. Most likely a duplicate command.")
+			return -- print("Command sent too quickly after another. Most likely a duplicate command.")
 		end
 	end
 
@@ -406,15 +431,21 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 	-- due to #playlist == 0.
 	jukeboxData.currentIndex = jukeboxData.currentIndex and math.max(math.min(jukeboxData.currentIndex, #playlist), 1) or 1
 
-	jukeboxData.x = jukebox:getX() 
-	jukeboxData.y = jukebox:getY()
-	jukeboxData.z = jukebox:getZ()
+	jukeboxData.x = math.floor(jukebox:getX())
+	jukeboxData.y = math.floor(jukebox:getY())
+	jukeboxData.z = math.floor(jukebox:getZ())
+
+	jukeboxData.player = {
+		x = math.floor(player:getX()),
+		y = math.floor(player:getY()),
+		z = math.floor(player:getZ())
+	}
 
 	local powerProblems = not ((SandboxVars.AllowExteriorGenerator and square:haveElectricity()) or (SandboxVars.ElecShutModifier > -1 
 						  and GameTime:getInstance():getNightsSurvived() < SandboxVars.ElecShutModifier and square:isOutside() == false))
 
 	if musicChoice == "Status" then
-		Jukebox.printStatus(player, jukebox)
+		Jukebox.printStatus(player, jukeboxData)
 		return
 	elseif musicChoice == "Off" then
 		square:playSound("LightSwitch")
@@ -426,7 +457,8 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 			Jukebox.enqueueTrack(jukeboxData, Jukebox.getCurrentTrack(jukeboxData))
 		end
 
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 		return
 	end
 
@@ -434,36 +466,32 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 		Jukebox.reportUnpowered(player)
 		square:playSound("LightSwitch")
 		jukeboxData.on = false
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 		return
 	elseif musicChoice == "On" then -- NOW we're done
 		square:playSound("LightSwitch")
 		jukeboxData.on = true
-		jukebox:transmitModData()
 
-		if #jukeboxData.playlist < 1 then return end
-		-- Used for delayed playing of the last jukebox activated by the player.
-		Jukebox.latest = {
-			player = player,
-			jukebox = jukebox,
-			musicChoice = "Play Now",
-			trackType = Jukebox.getCurrentTrack(jukeboxData)
-		}
-
-		if Jukebox.latest.trackType and Jukebox.getSoundFile(Jukebox.latest.trackType) then
-			Events.OnTick.Add(Jukebox.playLater)
+		if trackType then 
+			jukeboxData.currentIndex = Jukebox.getTrackIndex(jukeboxData, trackType)
+		elseif #playlist > 1 and jukeboxData.queueSize < 1 then
+			jukeboxData.currentIndex = Jukebox.random(#playlist)
 		end
 
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 		return
 	end
 
-	if not Jukebox.initializePlaylist(jukebox) then 
+	if not Jukebox.initializePlaylist(jukebox, jukeboxData) then 
 		Jukebox.reportEmpty(player)
 		return
 	end
 
 	if type(musicChoice) == "number" then
-		Jukebox.adjustVolume(player, jukebox, musicChoice)
+		Jukebox.adjustVolume(player, jukeboxData, musicChoice)
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
 		return
 	end
 
@@ -478,7 +506,10 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 	local playNext = musicChoice == "Play Next"
 	local playLast = musicChoice == "Play Last"
 
-	local key = Jukebox.locationToKey(jukeboxData)
+	if (playNow and Jukebox.getCurrentTrack(jukeboxData) == trackType) then
+		playNow = false
+		musicChoice = "Replay Current"
+	end
 
 	if musicChoice == "Replay Current" then
 		if (Jukebox.getSoundFile(currentTrack)) then	
@@ -488,23 +519,57 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 		-- Must enqueue to avoid skipping to the next queued track.
 		Jukebox.enqueueTrack(jukeboxData, Jukebox.getCurrentTrack(jukeboxData))
 
-		Jukebox.skipCurrentTrack(jukebox) 
+		if jukeboxData.queueLocked then
+			jukeboxData.replayedFromQueue = true
+		end
+
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
+		ModData.transmit("Jukebox.activeLocations") 
 
 		return
-	elseif musicChoice == "Replay Last" then
-		if (Jukebox.getSoundFile(priorTrack)) then	
-			Jukebox.reportMessage(player, Jukebox.translation.playing .. priorTitle .. ".")
-		end
-		
-		-- Must enqueue to avoid skipping to the next queued track.
-		Jukebox.enqueueTrack(jukeboxData, Jukebox.getPriorTrack(jukeboxData))
-		
+	elseif musicChoice == "Replay Last" then				
 		-- Requeue the current track to keep it in the list of songs that will play next in queue.
 		Jukebox.enqueueTrack(jukeboxData, Jukebox.getCurrentTrack(jukeboxData))
 
-		jukeboxData.currentIndex = Jukebox.getPriorIndex(jukeboxData)
+		if jukeboxData.queueLocked and jukeboxData.queueSize > 1 then
+			-- Minus 1 below because queueSize is artificially inflated 
+			-- at this point in time by the queueing of the current track.
+			local possibleLastQueuedIndex = (jukeboxData.currentIndex + jukeboxData.queueSize - 1) % #playlist
 
-		Jukebox.skipCurrentTrack(jukebox) -- transmits mod data
+			local lastQueuedIndex = possibleLastQueuedIndex == 0 and #playlist or possibleLastQueuedIndex
+
+			local targetTrack = jukeboxData.playlist[lastQueuedIndex]
+
+			Jukebox.removeTrack(jukeboxData, targetTrack)
+	
+			Jukebox.insertTrack(jukeboxData, targetTrack, nil, jukeboxData.currentIndex)
+
+			Jukebox.enqueueTrack(jukeboxData, targetTrack)
+
+			-- Index moved by insertion.
+			jukeboxData.currentIndex = Jukebox.getNextIndex(jukeboxData)
+			
+			-- Changed.
+			priorTrack = Jukebox.getPriorTrack(jukeboxData)
+			priorTitle = Jukebox.getPriorTitle(jukeboxData)
+
+			jukeboxData.replayedFromQueue = true
+		end
+
+		if (Jukebox.getSoundFile(priorTrack)) then	
+			Jukebox.reportMessage(player, Jukebox.translation.playing .. priorTitle .. ".")
+		end
+
+		-- Must enqueue to avoid skipping to the next queued track.
+		Jukebox.enqueueTrack(jukeboxData, priorTrack)
+
+		-- We only double-move this to make the language above make sense. Takes basically no time.
+		jukeboxData.currentIndex = Jukebox.getPriorIndex(jukeboxData)
+	
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
+		ModData.transmit("Jukebox.activeLocations") -- transmits mod data
 
 		return
 	elseif musicChoice == "Skip Current" then
@@ -526,15 +591,16 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 		if Jukebox.getSoundFile(nextTrack) then	
 			Jukebox.reportMessage(player, Jukebox.translation.skippedPriorSong .. nextTitle .. ".")
 		end
-
-		Jukebox.skipCurrentTrack(jukebox)
 		
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
+		ModData.transmit("Jukebox.activeLocations")
 
 		return
 	elseif musicChoice == "Toggle Queue Lock" then
 		jukeboxData.queueLocked = not jukeboxData.queueLocked
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 
 		if jukeboxData.queueLocked then
 			Jukebox.reportMessage(player, Jukebox.translation.queueLocked)
@@ -548,7 +614,7 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 
 		return
 	elseif musicChoice == "Dequeue Track" then		
-		Jukebox.removeTrack(jukebox, trackType)
+		Jukebox.removeTrack(jukeboxData, trackType)
 	
 		-- Must do this after the dequeue adjusts the playlist's index.
 		local nextIndex = Jukebox.getNextIndex(jukeboxData)
@@ -556,28 +622,72 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 		local possibleNext = (nextIndex + jukeboxData.queueSize) % #playlist
 		nextIndex = (possibleNext == 0 and #playlist) or possibleNext
 
-		Jukebox.insertTrack(jukebox, trackType, nil, nextIndex)
+		Jukebox.insertTrack(jukeboxData, trackType, nil, nextIndex)
 
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 
 		Jukebox.reportMessage(player, jukeboxData.titles[trackType] .. Jukebox.translation.removedFromQueue)
 
 		return
 	elseif musicChoice == "Random" then
-		Jukebox.clearQueue(jukebox)
+		if jukeboxData.queueLocked and jukeboxData.queueSize > 0 then
+			local randomIndex = Jukebox.random(jukeboxData.queueSize)
 
-		jukeboxData.currentIndex = Jukebox.random(#playlist)
+			local tracksRequiringRequeue = {[1] = currentTrack}
+
+			local counted = 0
+
+			for queuedTrackType in pairs(jukeboxData.queue) do
+				counted = counted + 1
+				if randomIndex == counted then
+					jukeboxData.currentIndex = Jukebox.getTrackIndex(jukeboxData, queuedTrackType)
+				else
+					tracksRequiringRequeue[#tracksRequiringRequeue + 1] = queuedTrackType
+				end
+			end
+
+			jukeboxData.queue = {}
+			jukeboxData.queueSize = 0
+	
+			for index, queuedTrackType in ipairs(tracksRequiringRequeue) do
+				if Jukebox.getTrackIndex(jukeboxData, queuedTrackType) then
+					Jukebox.removeTrack(jukeboxData, queuedTrackType)
+					Jukebox.insertTrack(jukeboxData, queuedTrackType, nil, jukeboxData.currentIndex + index)
+					Jukebox.enqueueTrack(jukeboxData, queuedTrackType)
+				end
+			end
+
+			jukeboxData.replayedFromQueue = true
+		else
+			Jukebox.clearQueue(jukeboxData)			
+			jukeboxData.currentIndex = Jukebox.random(#playlist)
+		end
+
 		-- New nextTrack now.
 		currentTrack = Jukebox.getCurrentTrack(jukeboxData)
+
+		-- To prevent skipping while queue exists.
+		Jukebox.enqueueTrack(jukeboxData, currentTrack)
 
 		if (Jukebox.getSoundFile(currentTrack)) then	
 			Jukebox.reportMessage(player, Jukebox.translation.randomlySelected .. Jukebox.getCurrentTitle(jukeboxData) .. ". " .. Jukebox.translation.trackWillPlayNow)
 		end
-
-		Jukebox.skipCurrentTrack(jukebox)
+		
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
+		ModData.transmit("Jukebox.activeLocations")
+		
+		return
 	elseif musicChoice == "Shuffle" then
-		Jukebox.clearQueue(jukebox)
-		Jukebox.shuffle(jukebox)
+		if not jukeboxData.queueLocked then 
+			Jukebox.clearQueue(jukeboxData)			
+		end
+
+		Jukebox.shuffle(jukeboxData)
+		
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 
 		local nextTrack = Jukebox.getNextTrack(jukeboxData)
 
@@ -585,12 +695,7 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 			Jukebox.reportMessage(player, Jukebox.translation.allTracksShuffled)
 		end
 	elseif (playNow or playNext or playLast) and (#playlist > 1) then
-		BS = BS or {}
-		BS.jukebox = jukebox
-		BS.jukeboxData = jukebox:getModData()
-		BS.jukeboxPlaylist = jukebox:getModData().playlist
-
-		Jukebox.removeTrack(jukebox, trackType)
+		Jukebox.removeTrack(jukeboxData, trackType)
 	
 		-- Must do this after the dequeue adjusts the playlist's index.
 		local nextIndex = Jukebox.getNextIndex(jukeboxData)
@@ -602,7 +707,7 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 
 		Jukebox.enqueueTrack(jukeboxData, trackType)
 
-		Jukebox.insertTrack(jukebox, trackType, nil, nextIndex)
+		Jukebox.insertTrack(jukeboxData, trackType, nil, nextIndex)
 
 		if playNow or not Jukebox.activeTracks[key] then
 			-- We may have said Play Next, but if jukebox is
@@ -612,7 +717,8 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 			jukeboxData.currentIndex = nextIndex
 		end
 
-		jukebox:transmitModData()
+		sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData})
+		ModData.transmit("Jukebox.activeLocations")
 
 		if playLast then 
 			Jukebox.reportMessage(player, jukeboxData.titles[trackType] .. Jukebox.translation.willPlayLast)
@@ -625,9 +731,9 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 	local selectedTrack = playNow and Jukebox.getCurrentTrack(jukeboxData) or Jukebox.getNextTrack(jukeboxData)
 
 	if playNow and Jukebox.activeTracks[key] then
-		Jukebox.skipCurrentTrack(jukebox)
+		sendClientCommand("TrueMusicJukebox", "move", jukeboxData)
 	elseif not Jukebox.activeTracks[key] then -- Play Next, Play Now, or Random Song, and nothing is playing.
-		sendClientCommand('Jukebox', 'play', jukeboxData)
+		sendClientCommand("TrueMusicJukebox", "play", jukeboxData)
 	end
 
 	if Jukebox.getSoundFile(selectedTrack) then
@@ -636,5 +742,3 @@ JukeboxMenus.onUseJukebox = function(worldObjects, player, jukebox, musicChoice,
 end
 
 Events.OnPreFillWorldObjectContextMenu.Add(JukeboxMenus.doBuildMenus)
-
--- if not isClient() then Events.LoadGridsquare.Add(Jukebox.getEvolvedJukebox) end

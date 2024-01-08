@@ -6,86 +6,93 @@ JukeboxClient.error = function(jukeboxData)
 	print(jukeboxData.error)
 end
 
-JukeboxClient.play = function(jukeboxData)
-	if not jukeboxData then return end
+JukeboxClient.play = function(jukeboxDataDrop)
+	if not jukeboxDataDrop then return end
+	
+	-- -------------------DEBUG-------------------
+	-- print("---------JUKEBOX CLIENT RECEIVED PLAY INSTRUCTION----------")
+	-- Jukebox.logCurrentTime()
+	-- print("---------JUKEBOX CLIENT RECEIVED PLAY INSTRUCTION----------")
+	-- -------------------------------------------
 
-	local playNow = jukeboxData.playNow
-	local square = getSquare(jukeboxData.x, jukeboxData.y, jukeboxData.z)
-	local jukebox = false
-	local priorTrackType = jukeboxData.priorTrackType
+	local key = Jukebox.dataToKey(jukeboxDataDrop)
+	local playNow = jukeboxDataDrop.playNow -- Need to grab from server's data
+	local priorTrackType = jukeboxDataDrop.priorTrackType
+	
+	jukeboxDataDrop.priorTrackType = nil --> We don't want to leave this set.
+	jukeboxDataDrop.playNow = nil --> We don't want to leave this set.
+	
+	local square = getSquare(jukeboxDataDrop.x, jukeboxDataDrop.y, jukeboxDataDrop.z)
 
-	if square then 
-		for index = 1, square:getObjects():size() do
-			local thisObject = square:getObjects():get(index - 1)
-			if thisObject:getSprite() then
-				local properties = thisObject:getSprite():getProperties()
-				jukebox = (properties and properties:Is("CustomName") 
-								and properties:Val("CustomName") == "Jukebox" 
-								and thisObject) or false
-				if jukebox then
-					-- Skip behavior has now been processed; reset it.
-					jukebox:getModData().skip = false
-					-- Possibly adjusted serverside.
-					jukebox:getModData().currentIndex = jukeboxData.currentIndex
-					-- Possibly rearranged serverside. Size should not have changed.
-					for index, value in ipairs(jukeboxData.playlist) do
-						jukebox:getModData().playlist[index] = value
-					end
-					jukeboxData = jukebox:getModData() --> Necessary to dequeue tracks from jukebox's actual mod data.
-					break
-				end
-			end
-		end
+	local jukebox = square and Jukebox.getVanillaMachine(square)
+
+	if square and not jukebox then --> jukebox was moved and can't possibly be playing anymore.
+		Jukebox.removeBatchedKey(key, jukeboxDataDrop.batch)
+		sendClientCommand("TrueMusicJukebox", "clear", {[key] = true, x = jukeboxDataDrop.x, y = jukeboxDataDrop.y, z = jukeboxDataDrop.z})		
+		return
 	end
 
-	local trackType = Jukebox.getCurrentTrack(jukeboxData)
+	local trackType = Jukebox.getCurrentTrack(jukeboxDataDrop)
+
+	Jukebox.activeLocations[key] = jukeboxDataDrop
+
+	local jukeboxData = Jukebox.activeLocations[key]
 
 	Jukebox.playSound(jukeboxData, trackType, playNow)
 
-	if jukebox then
-		if priorTrackType then
-			Jukebox.removeTrack(jukebox, priorTrackType)
-	
-			-- Must do this after the dequeue adjusts the playlist's index.
-			local nextIndex = Jukebox.getNextIndex(jukeboxData)
+	if priorTrackType then
+		Jukebox.delayedRequeueRequests = Jukebox.delayedRequeueRequests or {}
 
-			local possibleNext = (nextIndex + jukeboxData.queueSize) % #jukeboxData.playlist
-
-			nextIndex = (possibleNext == 0 and #jukeboxData.playlist) or possibleNext
-
-			Jukebox.enqueueTrack(jukeboxData, priorTrackType)
-	
-			Jukebox.insertTrack(jukebox, priorTrackType, nil, nextIndex)
+		Jukebox.delayedRequeueRequests[key] = Jukebox.delayedRequeueRequests[key] or {}
+		
+		if not Jukebox.delayedRequeueRequests[key][priorTrackType] then
+			Jukebox.delayedRequeueRequests[key][priorTrackType] = true
+			Jukebox.delayedRequeueRequests[key][#Jukebox.delayedRequeueRequests[key] + 1] = {
+				trackType = priorTrackType,
+				delay = 2 -- ticks
+			}
 		end
-		jukebox:transmitModData()
 	end
+	-- Skips tick check because another transmit fires immediately before this.
+	sendClientCommand("TrueMusicJukebox", "transmit", {[key] = jukeboxData, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z, doNotReply = true})
+
+	ModData.transmit("Jukebox.activeLocations")
 end
 
 JukeboxClient.update = function(jukeboxLocations)
-	print("Updating locations clientside.")
+
+	-- -------------------DEBUG-------------------
+	-- print("---------JUKEBOX CLIENT RECEIVED UPDATE INSTRUCTION----------")
+	-- Jukebox.logCurrentTime()
+	-- print("---------JUKEBOX CLIENT RECEIVED UPDATE INSTRUCTION----------")
+	-- -------------------------------------------
+
+	if not jukeboxLocations then return end
 	-- Set local activeLocations table from server's mod data.
-	for key, value in pairs(jukeboxLocations) do	
-		Jukebox.activeLocations[key] = value
+	for key, jukeboxData in pairs(jukeboxLocations) do
+		Jukebox.activeLocations[key] = jukeboxData
+		Jukebox.addBatchedKey(key, jukeboxData.batch)
 	end
 	ModData.transmit("Jukebox.activeLocations")
-	print("Transmitted the mod data...")
 end
 
 JukeboxClient.clear = function(jukeboxLocations)
+	if not jukeboxLocations then return	end
 	-- Set local activeLocations table from server's mod data.
-	for key in pairs(jukeboxLocations) do	
+	for key in pairs(jukeboxLocations) do
+		local batch = (type(Jukebox.activeLocations[key]) == "table") and Jukebox.activeLocations[key].batch
 		Jukebox.activeLocations[key] = nil
 		if Jukebox.activeTracks[key] then
 			Jukebox.activeTracks[key].sound:stop()
 			Jukebox.activeTracks[key] = nil
 		end
-		print("Clearing null location..." .. key)
+		if batch then Jukebox.removeBatchedKey(key, batch) end
 	end
 	ModData.transmit("Jukebox.activeLocations")
 end
 
 JukeboxClient.processServerCommand = function(module, command, args)
-	if not (module == "Jukebox" and JukeboxClient[command]) then return end
+	if not (module == "TrueMusicJukebox" and JukeboxClient[command]) then return end
 	JukeboxClient[command](args)
 end
 
