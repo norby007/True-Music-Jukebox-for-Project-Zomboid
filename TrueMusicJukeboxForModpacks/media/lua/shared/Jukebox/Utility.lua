@@ -1162,7 +1162,7 @@ Jukebox.updateSound = function()
 
 					-- Letting server handle skip will utilize jukebox tick to prevent
 					-- double-skipping after tracks in playlist end.
-					sendClientCommand("TrueMusicJukebox", "skip", {key = key})
+					sendClientCommand("TrueMusicJukebox", "skip", {key = key, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
 				end
 				break
 			end
@@ -1182,7 +1182,7 @@ Jukebox.updateSound = function()
 			-- Letting server handle skip will utilize jukebox tick to prevent
 			-- double-skipping after tracks in playlist end.
 			sound.changing = true
-			sendClientCommand("TrueMusicJukebox", "skip", {key = key})
+			sendClientCommand("TrueMusicJukebox", "skip", {key = key, x = jukeboxData.x, y = jukeboxData.y, z = jukeboxData.z})
 		end
 	until true end
 end

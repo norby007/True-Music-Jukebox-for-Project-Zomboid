@@ -12,7 +12,6 @@ JukeboxServer.history = {}
 
 JukeboxServer.hashed = {
 	["play"] = true,
-	["skip"] = true,
 	["move"] = true,
 }
 
