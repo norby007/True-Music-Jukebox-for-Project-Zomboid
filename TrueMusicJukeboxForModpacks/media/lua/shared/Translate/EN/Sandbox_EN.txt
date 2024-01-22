@@ -1,0 +1,32 @@
+Sandbox_EN = {
+	
+	Sandbox_TrueMusicJukebox = "True Music Jukebox",
+
+	Sandbox_jukeboxesAttractZombies = "Jukebox Music Attracts Zombies",
+	Sandbox_jukeboxesAttractZombies_tooltip = "Causes zombies to move toward the sound of jukebox music.",
+
+	Sandbox_ignoreDistanceWhenPlaying = "Ignore Distance When Playing Music",
+	Sandbox_ignoreDistanceWhenPlaying_tooltip = "If this option is enabled, songs will begin no matter how far players are from their source in order to maximize sync between all clients at all times. However, due to how Zomboid handles the creation of sound, clients may briefly stutter when songs start. If you disable this option, clients will not be in sync until they are within range of a jukebox while it is changing tracks, but they will not play tracks that are not audible to them, reducing the frequency of this stutter.",
+	
+	Sandbox_forceThreeDimensionalAudio = "Force Three-Dimensional Audio",
+	Sandbox_forceThreeDimensionalAudio_tooltip = "Forces all players on the server to use Project Zomboid's 3D sound mode, which causes sound to be<br>impacted by rooms and walls. We think this makes the music sound worse in a lot of cases, so we<br>recommend leaving this off and allowing your players to choose their own sound mode on an individual<br>basis using their in-game Mod Options. By default, this mod uses its own custom 3D sound mode.",
+
+	Sandbox_allowPortableJukeboxKeys = "Allow Portable Jukebox Keys",
+	Sandbox_allowPortableJukeboxKeys_tooltip = "If this is enabled, then you will be able to access the data of saved jukebox locations by using the inventory context menu of your key ring. Interact with any jukebox to store the key to its data for remote access.",
+
+	Sandbox_partyPooper = "Party Pooper",
+	Sandbox_partyPooper_tooltip = "Prevents jukebox heroes from spawning with a starter kit for building jukeboxes.",
+
+	Sandbox_heroStarterTracks = "Jukebox Hero Starter Tracks",
+	Sandbox_heroStarterTracks = "How many random cassettes and vinyls should a jukebox hero gain at character creation?",
+
+	Sandbox_maxRange = "Maximum Audible Range of Jukebox Music",
+	Sandbox_maxRange_tooltip = "Want to hear your jukebox throughout your city? Feel free to try to push the limits of reasonable. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_literatureFrequencyMultiplier = "Literature Frequency Multiplier",
+	Sandbox_literatureFrequencyMultiplier_tooltip = "Adjusts the base frequency with which books that teach jukebox construction are found. <RGB:1.0,0.6,0.0> ",
+
+	Sandbox_starterKitFrequencyMultiplier = "Jukebox Starter Kit Frequency Multiplier",
+	Sandbox_starterKitFrequencyMultiplier_tooltip = "Adjusts the base frequency with which jukebox starter kits are found. <RGB:1.0,0.6,0.0> "
+
+}
