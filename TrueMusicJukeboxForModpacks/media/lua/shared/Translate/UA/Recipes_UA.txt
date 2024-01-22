@@ -1,9 +1,0 @@
-Recipes_UA = {
-	Recipe_Grab_Manual = "Взяти посібник",
-	
-    Recipe_Craft_Jukebox = "Скрафтити музичний автомат",
-    Recipe_Craft_Jukebox_Skillfully = "Майстерно скрафтити музичний автомат",
-	
-    Recipe_Construct_Jukebox = "Сконструювати музичний автомат",
-    Recipe_Construct_Jukebox_Skillfully = "Майстерно сконструювати музичний автомат"
-}
