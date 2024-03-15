@@ -1,0 +1,9 @@
+Recipes_PL = {
+    Recipe_Grab_Manual = "WeŸ instrukcjê",
+	
+    Recipe_Craft_Jukebox = "Wytwórz szafê graj¹c¹",
+    Recipe_Craft_Jukebox_Skillfully = "Wytwórz szafê graj¹c¹ umiejêtnie",
+	
+    Recipe_Construct_Jukebox = "Skonstruuj szafê graj¹c¹",
+    Recipe_Construct_Jukebox_Skillfully = "Skonstruuj szafê graj¹c¹ umiejêtnie"
+}
