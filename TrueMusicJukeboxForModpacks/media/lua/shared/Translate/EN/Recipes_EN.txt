@@ -1,9 +1,0 @@
-Recipes_EN = {
-    Recipe_Grab_Manual = "Grab Manual",
-	
-    Recipe_Craft_Jukebox = "Craft Jukebox",
-    Recipe_Craft_Jukebox_Skillfully = "Craft Jukebox Skillfully",
-	
-    Recipe_Construct_Jukebox = "Construct Jukebox",
-    Recipe_Construct_Jukebox_Skillfully = "Construct Jukebox Skillfully"
-}

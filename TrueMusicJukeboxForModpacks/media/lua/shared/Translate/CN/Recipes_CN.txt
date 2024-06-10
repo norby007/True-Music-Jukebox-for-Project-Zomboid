@@ -1,9 +1,0 @@
-Recipes_CN = {
-    Recipe_Grab_Manual = "拿取手册",
-	
-    Recipe_Craft_Jukebox = "制作点唱机",
-    Recipe_Craft_Jukebox_Skillfully = "熟练制作点唱机",
-	
-    Recipe_Construct_Jukebox = "建造点唱机",
-    Recipe_Construct_Jukebox_Skillfully = "熟练建造点唱机"
-}
