@@ -1,0 +1,9 @@
+Recipes_ES = {
+    Recipe_Grab_Manual = "Tomar manual",
+	
+    Recipe_Craft_Jukebox = "Crear rocola",
+    Recipe_Craft_Jukebox_Skillfully = "Crear rocola hábilmente",
+	
+    Recipe_Construct_Jukebox = "Ensamblar rocola",
+    Recipe_Construct_Jukebox_Skillfully = "Ensamblar rocola hábilmente"
+}

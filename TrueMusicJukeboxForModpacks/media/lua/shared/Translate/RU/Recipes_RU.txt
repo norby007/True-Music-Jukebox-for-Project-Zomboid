@@ -1,0 +1,9 @@
+Recipes_RU = {
+    Recipe_Grab_Manual = "Взять инструкцию",
+	
+    Recipe_Craft_Jukebox = "Скрафтить музыкальный автомат",
+    Recipe_Craft_Jukebox_Skillfully = "Мастерски скрафтить музыкальный автомат",
+	
+    Recipe_Construct_Jukebox = "Соорудить музыкальный автомат",
+    Recipe_Construct_Jukebox_Skillfully = "Мастерски соорудить музыкальный автомат"
+}
