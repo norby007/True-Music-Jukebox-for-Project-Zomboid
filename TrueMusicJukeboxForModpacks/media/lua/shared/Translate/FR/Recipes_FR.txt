@@ -1,0 +1,9 @@
+Recipes_FR = {
+    Recipe_Grab_Manual = "Prendre le manuel",
+	
+    Recipe_Craft_Jukebox = "Fabriquer le jukebox",
+    Recipe_Craft_Jukebox_Skillfully = "Fabriquer le jukebox avec talent",
+	
+    Recipe_Construct_Jukebox = "Construire le jukebox",
+    Recipe_Construct_Jukebox_Skillfully = "Construire le jukebox avec talent"
+}
