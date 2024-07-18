@@ -1,9 +1,0 @@
-Recipes_PTBR = {
-    Recipe_Grab_Manual = "Pegar Manual",
-	
-    Recipe_Craft_Jukebox = "Montar Jukebox",
-    Recipe_Craft_Jukebox_Skillfully = "Montar Jukebox Habilmente",
-	
-    Recipe_Construct_Jukebox = "Construir Jukebox",
-    Recipe_Construct_Jukebox_Skillfully = "Construir Jukebox Habilmente"
-}

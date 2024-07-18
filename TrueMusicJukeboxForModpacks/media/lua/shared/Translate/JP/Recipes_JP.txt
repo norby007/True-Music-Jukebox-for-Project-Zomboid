@@ -1,9 +1,0 @@
-Recipes_JP = {
-    Recipe_Grab_Manual = "グラブマニュアル",
-	
-    Recipe_Craft_Jukebox = "クラフトジュークボックス",
-    Recipe_Craft_Jukebox_Skillfully = "ジュークボックスを上手に作る",
-	
-    Recipe_Construct_Jukebox = "ジュークボックスの構築",
-    Recipe_Construct_Jukebox_Skillfully = "ジュークボックスを上手に構築する"
-}
